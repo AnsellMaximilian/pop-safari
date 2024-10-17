@@ -1,35 +1,62 @@
-import { Client, Users } from 'node-appwrite';
+import { Client, Databases, Permission, Role, Account, ID, Query  } from 'node-appwrite';
 
-// This Appwrite function will be executed every time your function is triggered
-export default async ({ req, res, log, error }) => {
-  // You can use the Appwrite SDK to interact with other services
-  // For this example, we're using the Users service
+const func=  async ({ req, res, log }) => {
   const client = new Client()
-    .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
-    .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-    .setKey(req.headers['x-appwrite-key'] ?? '');
-  const users = new Users(client);
+     .setEndpoint('https://cloud.appwrite.io/v1')
+     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+     .setKey(process.env.APPWRITE_API_KEY);
 
-  try {
-    const response = await users.list();
-    // Log messages and errors to the Appwrite Console
-    // These logs won't be seen by your end users
-    log(`Total users: ${response.total}`);
-  } catch(err) {
-    error("Could not list users: " + err.message);
+  const databases = new Databases(client)
+  const account = new Account(client)
+
+  if(req.method === "POST"){
+    try {
+      const {name, username, email, password } = JSON.parse(req.body);
+
+        const foundProfiles = await databases.listDocuments(process.env.DB_ID, process.env.USER_PROFILE_COLLECTION_ID, [Query.equal("username", username)]);
+
+        if(foundProfiles.total > 0) {
+          return res.json({
+            success: false,
+            data: null,
+            note: "Username already exists."
+          })
+        }
+
+      const id = ID.unique();
+  
+      const createdUser = await account.create(id, email, password);
+
+      const createdUserProfile = await databases.createDocument(
+          process.env.DB_ID,
+          process.env.USER_PROFILE_COLLECTION_ID,
+          createdUser.$id,
+          {
+            username,
+            name
+          },
+          [
+            Permission.read(Role.any()), Permission.update(Role.user(createdUser.$id))
+          ]
+      )
+
+  
+      return res.json({
+        success: true,
+        data: {
+          user: {...createdUser, profile: createdUserProfile}
+        }
+      });
+    } catch (e) {
+      return res.json({
+        success: false,
+        data: null,
+        note: e?.message
+      })
+    }
+  }else {
+    return res.send("Failed")
   }
-
-  // The req object contains the request data
-  if (req.path === "/ping") {
-    // Use res object to respond with text(), json(), or binary()
-    // Don't forget to return a response!
-    return res.text("Pong");
-  }
-
-  return res.json({
-    motto: "Build like a team of hundreds_",
-    learn: "https://appwrite.io/docs",
-    connect: "https://appwrite.io/discord",
-    getInspired: "https://builtwith.appwrite.io",
-  });
 };
+
+export default func;
