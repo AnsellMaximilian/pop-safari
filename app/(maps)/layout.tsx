@@ -1,6 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { polygonOptions } from "@/const/maps";
 import { loader } from "@/lib/maps";
+import { Coordinate, Map3dEvent } from "@/type/maps";
 import React, { useEffect, useRef, useState } from "react";
 
 export default function MapsLayout({
@@ -9,6 +12,7 @@ export default function MapsLayout({
   children: React.ReactNode;
 }>) {
   const [map, setMap] = useState<google.maps.maps3d.Map3DElement | null>(null);
+  const [selectedCoords, setSelectedCoords] = useState<Coordinate[]>([]);
 
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +32,18 @@ export default function MapsLayout({
         if (map) {
           setMap(map);
           mapRef.current!.append(map);
+          map.addEventListener("gmp-click", (basicE) => {
+            const e: Map3dEvent = basicE as Map3dEvent;
+
+            setSelectedCoords((prev) => [
+              ...prev,
+              {
+                lat: e.position.lat,
+                lng: e.position.lng,
+                altitude: e.position.altitude,
+              },
+            ]);
+          });
         }
       });
     }
@@ -58,8 +74,40 @@ export default function MapsLayout({
           }
         }}
       >
-        Test
+        Move Camera
       </button>
+      {selectedCoords.map((c, i) => {
+        return (
+          <div key={i}>
+            lat: {c.lat} lng: {c.lng} alt: {c.altitude}
+          </div>
+        );
+      })}
+      <Button
+        onClick={() => {
+          if (map) {
+            const polygon = new google.maps.maps3d.Polygon3DElement(
+              polygonOptions
+            );
+            polygon.outerCoordinates = selectedCoords.map((c) => ({
+              ...c,
+              altitude: 300,
+            }));
+
+            map.append(polygon);
+            setSelectedCoords([]);
+          }
+        }}
+      >
+        Create Polygon
+      </Button>
+      <Button
+        onClick={() => {
+          setSelectedCoords([]);
+        }}
+      >
+        Remove Points
+      </Button>
     </div>
   );
 }
