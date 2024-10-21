@@ -8,3 +8,5 @@ export const polygonOptions: google.maps.maps3d.Polygon3DElementOptions = {
   extruded: true,
   drawsOccludedSegments: true,
 };
+
+export const USER_REGISTRATION_MARKER = "USER_REGISTRATION_MARKER";

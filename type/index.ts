@@ -8,9 +8,9 @@ export type ApiResponse<T> = {
 };
 
 export type UserProfile = Models.Document & {
-  username: string;
-  name?: string;
   bio?: string;
+  preferredLat?: number;
+  preferredLng?: number;
 };
 
 export type User = Models.User<Models.Preferences> & {
