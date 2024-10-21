@@ -15,19 +15,28 @@ export const UserContextProvider: React.FC<{ children: ReactNode }> = ({
   const { toast } = useToast();
 
   const getAccount = async () => {
+    let user: User | null = null;
     try {
       setIsLoading(true);
-      const user = await account.get();
-      const userProfile: UserProfile = await databases.getDocument(
-        config.dbId,
-        config.userProfileCollectionId,
-        user.$id
-      );
-      setCurrentUser({ ...user, profile: userProfile });
+      const acc = await account.get();
+
+      user = { ...acc, profile: null };
     } catch (error) {
       setCurrentUser(null);
     } finally {
+      setCurrentUser(user);
       setIsLoading(false);
+    }
+
+    if (user) {
+      try {
+        const userProfile: UserProfile = await databases.getDocument(
+          config.dbId,
+          config.userProfileCollectionId,
+          user.$id
+        );
+        setCurrentUser({ ...user, profile: userProfile });
+      } catch (error) {}
     }
   };
 
