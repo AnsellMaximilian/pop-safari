@@ -7,7 +7,7 @@ import { z } from "zod";
 import React, { useEffect, useRef, useState } from "react";
 import Map3D from "@/components/Map3D";
 import { Coordinate, Map3dEvent } from "@/type/maps";
-import { loader } from "@/lib/maps";
+import { initAutocomplete, loader } from "@/lib/maps";
 import { USER_REGISTRATION_MARKER } from "@/const/maps";
 import {
   Form,
@@ -25,6 +25,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { config, databases } from "@/lib/appwrite";
+import { UserProfile } from "@/type";
+import { Permission, Role } from "appwrite";
 const formSchema = z.object({
   bio: z.string().max(500),
 });
@@ -37,7 +40,7 @@ export default function UserOnboarding() {
   > | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  const { currentUser } = useUser();
+  const { currentUser, setCurrentUser } = useUser();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -58,6 +61,8 @@ export default function UserOnboarding() {
       const { Marker3DElement } = (await google.maps.importLibrary(
         "maps3d"
       )) as google.maps.Maps3DLibrary;
+      if (map) initAutocomplete(map);
+
       const handleMapClick: EventListenerOrEventListenerObject = (basicE) => {
         const e: Map3dEvent = basicE as Map3dEvent;
 
@@ -66,12 +71,12 @@ export default function UserOnboarding() {
         });
 
         if (map) {
-          const oldMarker = document.querySelector(
-            `#${USER_REGISTRATION_MARKER}`
+          const oldMarkers = document.querySelectorAll(
+            `.${USER_REGISTRATION_MARKER}`
           );
-          oldMarker?.remove();
 
-          marker.id = USER_REGISTRATION_MARKER;
+          oldMarkers.forEach((m) => m.remove());
+          marker.classList.add(USER_REGISTRATION_MARKER);
           map.append(marker);
           setPreferredPosition({ lat: e.position.lat, lng: e.position.lng });
         }
@@ -79,6 +84,8 @@ export default function UserOnboarding() {
       if (map) {
         map.addEventListener("gmp-click", handleMapClick);
       }
+
+      // Places
 
       return () => {
         map?.removeEventListener("gmp-click", handleMapClick);
@@ -90,15 +97,36 @@ export default function UserOnboarding() {
     let errorMsg = "Something went wrong.";
     let hasError = false;
 
+    if (!currentUser) return;
+
     try {
-      router.push("/register/onboarding/user");
+      setIsLoading(true);
+      const createdProfile = (await databases.createDocument(
+        config.dbId,
+        config.userProfileCollectionId,
+        currentUser.$id,
+        {
+          bio: values.bio,
+          preferredLat: preferredPosition ? preferredPosition.lat : null,
+          preferredLng: preferredPosition ? preferredPosition.lng : null,
+        },
+        [
+          Permission.update(Role.user(currentUser.$id)),
+          Permission.delete(Role.user(currentUser.$id)),
+        ]
+      )) as UserProfile;
+      console.log({ createdProfile });
+
+      setCurrentUser({ ...currentUser, profile: createdProfile });
+
+      router.push("/maps");
     } catch (error) {
       if (error instanceof Error) errorMsg = error.message;
       hasError = true;
     } finally {
       if (hasError)
         toast({
-          title: "Registration Failed",
+          title: "User Onboarding Failed",
           variant: "destructive",
           description: errorMsg,
         });
@@ -117,9 +145,26 @@ export default function UserOnboarding() {
                 Choose your location. It doesn&apos;t have to be where you live.
                 It could be places where you frequent, like a hangout spot.
               </FormDescription>
+
+              <div className="py-4">
+                {preferredPosition ? (
+                  <div>
+                    Selected Position{" "}
+                    <span>
+                      {preferredPosition.lat}, {preferredPosition.lng}
+                    </span>
+                  </div>
+                ) : (
+                  <div>Place a marker</div>
+                )}
+              </div>
             </div>
             <div>
-              <Input placeholder="Search" className="" />
+              <Input
+                placeholder="Search"
+                className="rounded-none"
+                id="pac-input"
+              />
               <Map3D
                 mapRef={mapRef}
                 setMap={setMap}
