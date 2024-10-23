@@ -25,3 +25,10 @@ export type RemoteData<T> = {
 export type RemoteDataWithSetter<T> = RemoteData<T> & {
   setData: Dispatch<SetStateAction<RemoteData<T>>>;
 };
+
+export type Business = Models.Document & {
+  name: string;
+  description?: string;
+  positionLat?: number;
+  positionLng?: number;
+};

@@ -12,7 +12,7 @@ const publicRoute = <P extends object>(
 
     useEffect(() => {
       if (!isLoading && currentUser) {
-        router.push("/app/dashboard");
+        router.push("/dashboard");
       }
     }, [isLoading, currentUser, router]);
 

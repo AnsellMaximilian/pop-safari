@@ -9,6 +9,7 @@ export interface UserContextData {
   isProcessing: boolean;
   login: (email: string, password: string) => void;
   logout: () => void;
+  getAccount: () => Promise<void>;
 }
 
 export const UserContext = createContext<UserContextData>({
@@ -18,6 +19,7 @@ export const UserContext = createContext<UserContextData>({
   isProcessing: false,
   login: () => {},
   logout: () => {},
+  getAccount: async () => {},
 });
 
 export const useUser = (): UserContextData => {

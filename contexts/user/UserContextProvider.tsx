@@ -79,6 +79,7 @@ export const UserContextProvider: React.FC<{ children: ReactNode }> = ({
         setCurrentUser,
         login,
         logout,
+        getAccount,
       }}
     >
       {isLoading && <Loader />}
