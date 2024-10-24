@@ -1,7 +1,7 @@
 import { account, config, databases } from "@/lib/appwrite";
 import { ReactNode, useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
-import { User, UserProfile } from "@/type";
+import { Business, User, UserProfile } from "@/type";
 import Loader from "@/components/Loader";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,7 +20,7 @@ export const UserContextProvider: React.FC<{ children: ReactNode }> = ({
       setIsLoading(true);
       const acc = await account.get();
 
-      user = { ...acc, profile: null };
+      user = { ...acc, profile: null, business: null };
     } catch (error) {
       setCurrentUser(null);
     } finally {
@@ -36,6 +36,15 @@ export const UserContextProvider: React.FC<{ children: ReactNode }> = ({
           user.$id
         );
         setCurrentUser({ ...user, profile: userProfile });
+      } catch (error) {}
+
+      try {
+        const business: Business = (await databases.getDocument(
+          config.dbId,
+          config.businessCollectionId,
+          user.$id
+        )) as Business;
+        setCurrentUser({ ...user, business });
       } catch (error) {}
     }
   };

@@ -15,6 +15,7 @@ export type UserProfile = Models.Document & {
 
 export type User = Models.User<Models.Preferences> & {
   profile: UserProfile | null;
+  business: Business | null;
 };
 
 export type RemoteData<T> = {

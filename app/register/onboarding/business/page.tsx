@@ -32,8 +32,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { config, databases, storage } from "@/lib/appwrite";
-import { UserProfile } from "@/type";
-import { Permission, Role } from "appwrite";
+import { Business, UserProfile } from "@/type";
+import { ID, Permission, Role } from "appwrite";
 import Image from "next/image";
 import Point from "@/components/Point";
 import { removeElementsWithClass } from "@/utils/maps";
@@ -53,6 +53,7 @@ export default function BusinessOnboarding() {
 
   // Polygon
   const [polygonPositions, setPolygonPositions] = useState<Coordinate[]>([]);
+  const [polygonMarkers, setPolygonMarkers] = useState<Coordinate[]>([]);
   const [hasSetPolygon, setHasSetPolygon] = useState(false);
 
   // Polygon OR precise point mode
@@ -122,7 +123,7 @@ export default function BusinessOnboarding() {
           if (map) {
             marker.classList.add(BUSINESS_REGIS_POLY_POINT);
             map.append(marker);
-            setPolygonPositions((prev) => [
+            setPolygonMarkers((prev) => [
               ...prev,
               {
                 lat: e.position.lat,
@@ -176,23 +177,40 @@ export default function BusinessOnboarding() {
 
     try {
       setIsLoading(true);
+      // upload picture first
+      let profileImageId: null | string = null;
+      if (profilePicture) {
+        const picture = await storage.createFile(
+          config.bucketId,
+          ID.unique(),
+          profilePicture
+        );
+
+        profileImageId = picture.$id;
+      }
+
       const createdProfile = (await databases.createDocument(
         config.dbId,
-        config.userProfileCollectionId,
+        config.businessCollectionId,
         currentUser.$id,
         {
-          bio: values.description,
-          preferredLat: preferredPosition ? preferredPosition.lat : null,
-          preferredLng: preferredPosition ? preferredPosition.lng : null,
+          name: values.name,
+          description: values.description,
+          positionLat: preferredPosition ? preferredPosition.lat : null,
+          positionLng: preferredPosition ? preferredPosition.lng : null,
+          polygonPositions: hasSetPolygon
+            ? polygonPositions.map((p) => JSON.stringify(p))
+            : [],
+          profileImageId,
         },
         [
           Permission.update(Role.user(currentUser.$id)),
           Permission.delete(Role.user(currentUser.$id)),
         ]
-      )) as UserProfile;
+      )) as Business;
       console.log({ createdProfile });
 
-      setCurrentUser({ ...currentUser, profile: createdProfile });
+      setCurrentUser({ ...currentUser, business: createdProfile });
 
       router.push("/maps");
     } catch (error) {
@@ -302,16 +320,16 @@ export default function BusinessOnboarding() {
                       className=""
                       variant="outline"
                       type="button"
-                      disabled={polygonPositions.length < 2}
+                      disabled={polygonMarkers.length < 2}
                       onClick={() => {
-                        if (map && polygonPositions.length > 2) {
+                        if (map && polygonMarkers.length > 2) {
                           removeElementsWithClass(BUSINESS_REGIS_POLYGON);
 
                           const polygon =
                             new google.maps.maps3d.Polygon3DElement(
                               polygonOptions
                             );
-                          polygon.outerCoordinates = polygonPositions.map(
+                          polygon.outerCoordinates = polygonMarkers.map(
                             (c) => ({
                               ...c,
                               altitude: 300,
@@ -319,9 +337,10 @@ export default function BusinessOnboarding() {
                           );
                           polygon.classList.add(BUSINESS_REGIS_POLYGON);
                           removeElementsWithClass(BUSINESS_REGIS_POLY_POINT);
+                          setPolygonPositions(polygonMarkers);
                           map.append(polygon);
                           setHasSetPolygon(true);
-                          setPolygonPositions([]);
+                          setPolygonMarkers([]);
                         }
                       }}
                     >
@@ -330,10 +349,10 @@ export default function BusinessOnboarding() {
                     <Button
                       variant="outline"
                       type="button"
-                      disabled={polygonPositions.length <= 0}
+                      disabled={polygonMarkers.length <= 0}
                       onClick={() => {
                         removeElementsWithClass(BUSINESS_REGIS_POLY_POINT);
-                        setPolygonPositions([]);
+                        setPolygonMarkers([]);
                       }}
                     >
                       Remove Markers
@@ -345,6 +364,7 @@ export default function BusinessOnboarding() {
                       onClick={() => {
                         removeElementsWithClass(BUSINESS_REGIS_POLYGON);
                         setHasSetPolygon(false);
+                        setPolygonPositions([]);
                       }}
                     >
                       Remove Area

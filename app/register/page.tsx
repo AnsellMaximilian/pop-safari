@@ -76,7 +76,7 @@ function RegisterPage() {
       );
 
       const session = await account.createEmailPasswordSession(email, password);
-      setCurrentUser({ ...createdAccount, profile: null });
+      setCurrentUser({ ...createdAccount, profile: null, business: null });
     } catch (error) {
       if (error instanceof Error) errorMsg = error.message;
       hasError = true;
