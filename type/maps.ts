@@ -14,3 +14,8 @@ export type Coordinate = {
   lng: number;
   altitude: number;
 };
+
+export enum MarkerPlaceMode {
+  POLY = "POLY",
+  POINT = " POINT",
+}

@@ -31,4 +31,6 @@ export type Business = Models.Document & {
   description?: string;
   positionLat?: number;
   positionLng?: number;
+  polygonPositions: string[];
+  profileImageId?: string;
 };
