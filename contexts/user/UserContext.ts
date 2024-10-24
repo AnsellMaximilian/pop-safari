@@ -7,6 +7,9 @@ export interface UserContextData {
   isLoading: boolean;
   // for activities involving accounts (register, login, etc)
   isProcessing: boolean;
+
+  isLoadingBusiness: boolean;
+  isLoadingProfile: boolean;
   login: (email: string, password: string) => void;
   logout: () => void;
   getAccount: () => Promise<void>;
@@ -17,6 +20,8 @@ export const UserContext = createContext<UserContextData>({
   setCurrentUser: () => {},
   isLoading: true,
   isProcessing: false,
+  isLoadingBusiness: false,
+  isLoadingProfile: false,
   login: () => {},
   logout: () => {},
   getAccount: async () => {},

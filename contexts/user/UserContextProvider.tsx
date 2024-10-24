@@ -12,6 +12,10 @@ export const UserContextProvider: React.FC<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  const [isLoadingBusiness, setIsLoadingBusiness] = useState(true);
+
   const { toast } = useToast();
 
   const getAccount = async () => {
@@ -36,7 +40,10 @@ export const UserContextProvider: React.FC<{ children: ReactNode }> = ({
           user.$id
         );
         setCurrentUser({ ...user, profile: userProfile });
-      } catch (error) {}
+      } catch (error) {
+      } finally {
+        setIsLoadingProfile(false);
+      }
 
       try {
         const business: Business = (await databases.getDocument(
@@ -45,7 +52,10 @@ export const UserContextProvider: React.FC<{ children: ReactNode }> = ({
           user.$id
         )) as Business;
         setCurrentUser({ ...user, business });
-      } catch (error) {}
+      } catch (error) {
+      } finally {
+        setIsLoadingBusiness(false);
+      }
     }
   };
 
@@ -85,6 +95,8 @@ export const UserContextProvider: React.FC<{ children: ReactNode }> = ({
         currentUser,
         isLoading,
         isProcessing,
+        isLoadingBusiness,
+        isLoadingProfile,
         setCurrentUser,
         login,
         logout,
