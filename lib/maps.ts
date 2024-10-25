@@ -1,3 +1,5 @@
+import { SEARCH_PLACE_MARKER } from "@/const/maps";
+import { removeElementsWithClass } from "@/utils/maps";
 import { Loader } from "@googlemaps/js-api-loader";
 
 export const loader = new Loader({
@@ -20,7 +22,8 @@ export async function initAutocomplete(
       window.alert("No viewport for input: " + place.name);
       return;
     }
-    zoomToViewport(place.geometry, map3DElement, place);
+    // zoomToViewport(place.geometry, map3DElement, place);
+    zoomToLocation(place.geometry.location!, map3DElement, place);
   });
 }
 
@@ -80,3 +83,34 @@ export async function getElevationforPoint(
   const elevation = elevationResponse.results[0].elevation || 10;
   return elevation;
 }
+
+export const zoomToLocation = async (
+  location: google.maps.LatLng,
+  map3DElement: google.maps.maps3d.Map3DElement,
+  place: google.maps.places.PlaceResult
+) => {
+  // @ts-ignore
+  const { Marker3DElement } = await google.maps.importLibrary("maps3d");
+
+  removeElementsWithClass(SEARCH_PLACE_MARKER);
+
+  // Place a marker at the location
+  const marker = new Marker3DElement({
+    position: { lat: location.lat(), lng: location.lng(), altitude: 50 }, // Set altitude as needed
+    title: "Selected Location",
+    label: "Found Place",
+  });
+  marker.classList.add(SEARCH_PLACE_MARKER);
+  map3DElement.append(marker);
+
+  // Zoom to the marker location
+  let elevation = await getElevationforPoint(location, place);
+  map3DElement.center = {
+    lat: location.lat(),
+    lng: location.lng(),
+    altitude: elevation ?? 0 + 50,
+  };
+  map3DElement.heading = 0;
+  map3DElement.range = 1000;
+  map3DElement.tilt = 65;
+};

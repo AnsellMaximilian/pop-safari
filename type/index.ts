@@ -35,3 +35,9 @@ export type Business = Models.Document & {
   polygonPositions: string[];
   profileImageId?: string;
 };
+
+export type Safari = Models.Document & {
+  title: string;
+  description?: string;
+  thumbnailId?: string;
+};
