@@ -8,23 +8,37 @@ export const loader = new Loader({
 });
 
 export async function initAutocomplete(
-  map3DElement: google.maps.maps3d.Map3DElement
+  map3DElement: google.maps.maps3d.Map3DElement,
+  onFoundPlace?: (place: google.maps.places.PlaceResult) => Promise<void>
 ) {
   // @ts-ignore
   const { Autocomplete } = await google.maps.importLibrary("places");
   const autocomplete = new Autocomplete(document.getElementById("pac-input"), {
     fields: ["geometry", "name", "place_id"],
   });
-  autocomplete.addListener("place_changed", () => {
-    //viewer.entities.removeAll();
-    const place: google.maps.places.PlaceResult = autocomplete.getPlace();
-    if (!place.geometry || !place.geometry.viewport) {
-      window.alert("No viewport for input: " + place.name);
-      return;
+
+  const listener: google.maps.MapsEventListener = autocomplete.addListener(
+    "place_changed",
+    () => {
+      //viewer.entities.removeAll();
+      const place: google.maps.places.PlaceResult = autocomplete.getPlace();
+      if (!place.geometry || !place.geometry.viewport) {
+        window.alert("No viewport for input: " + place.name);
+        return;
+      }
+
+      if (onFoundPlace) {
+        onFoundPlace(place);
+      }
+
+      // zoomToViewport(place.geometry, map3DElement, place);
+      zoomToLocation(place.geometry.location!, map3DElement, place);
     }
-    // zoomToViewport(place.geometry, map3DElement, place);
-    zoomToLocation(place.geometry.location!, map3DElement, place);
-  });
+  );
+
+  return listener;
+
+  // google.maps.event.removeListener(listener);
 }
 
 export const zoomToViewport = async (
