@@ -6,6 +6,8 @@ import { initAutocomplete, loader } from "@/lib/maps";
 import { Map3dEvent, MapResponse, PlaceData } from "@/type/maps";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { CURRENT_USER_POS } from "@/const/maps";
+import PlaceDisplay from "@/components/PlaceDisplay";
 
 export default function Create() {
   const [map, setMap] = useState<google.maps.maps3d.Map3DElement | null>(null);
@@ -61,6 +63,58 @@ export default function Create() {
     };
   }, [map]);
 
+  useEffect(() => {
+    if (map) {
+      loader.load().then(async () => {
+        // @ts-ignore
+        const { Marker3DElement } = (await google.maps.importLibrary(
+          "maps3d"
+        )) as google.maps.Maps3DLibrary;
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userLocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+              alt: 100,
+            };
+            console.log({ userLocation, position });
+            // @ts-ignore
+            map.flyCameraTo({
+              endCamera: {
+                center: {
+                  lat: userLocation.lat,
+                  lng: userLocation.lng,
+                  altitude: userLocation.alt,
+                },
+                tilt: 67.5,
+                range: 500,
+              },
+              durationMillis: 5000,
+            });
+
+            const marker = new Marker3DElement({
+              position: { lat: userLocation.lat, lng: userLocation.lng },
+              label: "Current Position",
+            });
+
+            if (map) {
+              const oldMarkers = document.querySelectorAll(
+                `.${CURRENT_USER_POS}`
+              );
+
+              oldMarkers.forEach((m) => m.remove());
+              marker.classList.add(CURRENT_USER_POS);
+              map.append(marker);
+            }
+          },
+          (error) => {
+            console.error("Error fetching location:", error);
+          }
+        );
+      });
+    }
+  }, [map]);
+
   return (
     <div>
       <div className="flex gap-8">
@@ -79,24 +133,7 @@ export default function Create() {
         <div>
           <h1>Places</h1>
           <Input placeholder="Search Place" />
-          {displayedPlace && (
-            <div>
-              <div className="text-sm tracking-tight font-semibold">
-                {displayedPlace.displayName?.text}
-              </div>
-              <div className="text-xs">{displayedPlace.formattedAddress}</div>
-              {displayedPlace.photos && displayedPlace.photos.length > 0 && (
-                <img
-                  src={`https://places.googleapis.com/v1/${
-                    displayedPlace.photos[0].name
-                  }/media?key=${String(
-                    process.env.NEXT_PUBLIC_MAPS_API_KEY
-                  )}&maxHeightPx=${1000}&maxWidthPx=${1000}`}
-                  className="w-96"
-                />
-              )}
-            </div>
-          )}
+          {displayedPlace && <PlaceDisplay place={displayedPlace} />}
         </div>
       </div>
     </div>

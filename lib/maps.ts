@@ -1,4 +1,4 @@
-import { SEARCH_PLACE_MARKER } from "@/const/maps";
+import { NEARBY_MARKER, SEARCH_PLACE_MARKER } from "@/const/maps";
 import { removeElementsWithClass } from "@/utils/maps";
 import { Loader } from "@googlemaps/js-api-loader";
 
@@ -128,3 +128,60 @@ export const zoomToLocation = async (
   map3DElement.range = 1000;
   map3DElement.tilt = 65;
 };
+// NEARBY
+
+export async function getNearbyPlaces(
+  lat: number,
+  lng: number,
+  map?: google.maps.maps3d.Map3DElement,
+  radius: number = 500
+) {
+  //@ts-ignore
+  const { Place, SearchNearbyRankPreference } =
+    (await google.maps.importLibrary("places")) as google.maps.PlacesLibrary;
+  // @ts-ignore
+  const { Marker3DElement } = (await google.maps.importLibrary(
+    "maps3d"
+  )) as google.maps.Maps3DLibrary;
+
+  // Restrict within the map viewport.
+  let center = new google.maps.LatLng(lat, lng);
+
+  const request = {
+    // required parameters
+    fields: ["displayName", "location", "businessStatus"],
+    locationRestriction: {
+      center: center,
+      radius: 500,
+    },
+    // optional parameters
+    maxResultCount: 5,
+    rankPreference: SearchNearbyRankPreference.POPULARITY,
+    language: "en-US",
+    region: "us",
+  };
+
+  //@ts-ignore
+  const { places } = await Place.searchNearby(request);
+  removeElementsWithClass(NEARBY_MARKER);
+
+  if (places.length && map) {
+    console.log(places);
+
+    const { LatLngBounds } = (await google.maps.importLibrary(
+      "core"
+    )) as google.maps.CoreLibrary;
+
+    // Loop through and get all the results.
+    places.forEach((place) => {
+      const marker = new Marker3DElement({
+        position: { lat: place.location?.lat(), lng: place.location?.lng() },
+        label: place.displayName ?? "Place",
+      });
+
+      marker.classList.add(NEARBY_MARKER);
+      map.append(marker);
+    });
+  }
+  return places;
+}

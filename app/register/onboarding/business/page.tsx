@@ -8,8 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import React, { useEffect, useRef, useState } from "react";
 import Map3D from "@/components/Map3D";
-import { Coordinate, Map3dEvent, MarkerPlaceMode } from "@/type/maps";
-import { initAutocomplete, loader } from "@/lib/maps";
+import {
+  Coordinate,
+  Map3dEvent,
+  MarkerPlaceMode,
+  PlaceData,
+} from "@/type/maps";
+import { getNearbyPlaces, initAutocomplete, loader } from "@/lib/maps";
 import {
   BUSINESS_REGIS_POLY_POINT,
   BUSINESS_REGIS_POLYGON,
@@ -37,6 +42,9 @@ import { ID, Permission, Role } from "appwrite";
 import Image from "next/image";
 import Point from "@/components/Point";
 import { removeElementsWithClass } from "@/utils/maps";
+import axios from "axios";
+import PlaceDisplay from "@/components/PlaceDisplay";
+import { truncateString } from "@/utils/common";
 const formSchema = z.object({
   name: z.string().min(5).max(500),
   description: z.string().max(500),
@@ -61,12 +69,18 @@ export default function BusinessOnboarding() {
     MarkerPlaceMode.POINT
   );
 
+  // places
+  const [nearbyPlaces, setNearbyPlaces] = useState<google.maps.places.Place[]>(
+    []
+  );
+
   // Business Profile picture
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePicturePreviewURL, setProfilePicturePreviewURL] = useState<
     string | null
   >(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const [displayedPlace, setDisplayedPlace] = useState<PlaceData | null>(null);
 
   const { currentUser, setCurrentUser } = useUser();
   const router = useRouter();
@@ -87,7 +101,34 @@ export default function BusinessOnboarding() {
   }, [currentUser]);
 
   useEffect(() => {
-    if (map) initAutocomplete(map);
+    let autocompleteListener: google.maps.MapsEventListener | null = null;
+
+    if (map)
+      initAutocomplete(map, async (place) => {
+        console.log({ place });
+        try {
+          const placeDetails = (await axios.get(
+            `https://places.googleapis.com/v1/places/${
+              place.place_id
+            }?fields=id,displayName,photos,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,formattedAddress,location,types,viewport&key=${String(
+              process.env.NEXT_PUBLIC_MAPS_API_KEY
+            )}`
+          )) as { data: PlaceData };
+          console.log({ placeDetails });
+
+          setDisplayedPlace(placeDetails.data);
+        } catch (error) {
+          console.log(error);
+        }
+      }).then((listener) => {
+        autocompleteListener = listener;
+      });
+
+    return () => {
+      if (autocompleteListener) {
+        google.maps.event.removeListener(autocompleteListener);
+      }
+    };
   }, [map]);
 
   useEffect(() => {
@@ -113,6 +154,13 @@ export default function BusinessOnboarding() {
             marker.classList.add(BUSINESS_REGISTRATION_MARKER);
             map.append(marker);
             setPreferredPosition({ lat: e.position.lat, lng: e.position.lng });
+
+            const nearbyPlaces = await getNearbyPlaces(
+              e.position.lat,
+              e.position.lng,
+              map
+            );
+            setNearbyPlaces(nearbyPlaces);
           }
         } else {
           const marker = new Marker3DElement({
@@ -389,6 +437,19 @@ export default function BusinessOnboarding() {
                 setMap={setMap}
                 className="h-96 w-[500px] relative"
               ></Map3D>
+              {displayedPlace && <PlaceDisplay place={displayedPlace} />}
+              <div className="grid grid-cols-3 gap-2">
+                {nearbyPlaces.map((p) => {
+                  return (
+                    <div
+                      key={p.id}
+                      className="p-2 text-xs rounded-md border border-border "
+                    >
+                      {truncateString(p.displayName || "Unnamed", 20)}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
