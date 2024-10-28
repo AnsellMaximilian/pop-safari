@@ -4,7 +4,7 @@ import React, { HTMLAttributes, useEffect } from "react";
 import { loader } from "@/lib/maps";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
-  setMap: React.Dispatch<
+  setMap?: React.Dispatch<
     React.SetStateAction<google.maps.maps3d.Map3DElement | null>
   >;
   mapRef: React.RefObject<HTMLDivElement>;
@@ -18,13 +18,18 @@ export default function Map3D({ mapRef, setMap, ...props }: Props) {
           "maps3d"
         )) as google.maps.Maps3DLibrary;
         map = new Map3DElement({
-          center: { lat: 37.36353, lng: -121.9286, altitude: 0 },
-          tilt: 67.5,
-          range: 1000,
+          center: {
+            lat: 40.6904220416242,
+            lng: -74.0464663795214,
+            altitude: 5.817827242160252,
+          },
+          tilt: 75.08332032319454,
+          range: 334.6798065248004,
+          heading: -44.04146077322564,
         });
 
         if (map) {
-          setMap(map);
+          if (setMap) setMap(map);
           mapRef.current!.append(map);
         }
       });
