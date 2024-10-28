@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import logo from "@/assets/pop-safari-logo.svg";
+import defUser from "@/assets/default-user.svg";
+
 import {
   Card,
   CardContent,
@@ -31,7 +33,7 @@ import publicRoute from "@/hooks/publicRoute";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { account, config, databases } from "@/lib/appwrite";
+import { account, config, databases, storage } from "@/lib/appwrite";
 import { ID, Permission, Query, Role } from "appwrite";
 import { useUser } from "@/contexts/user/UserContext";
 import Map3D from "@/components/Map3D";
@@ -72,6 +74,37 @@ function RegisterPage() {
   const [registerStep, setRegisterStep] = useState<RegisterStep>(
     RegisterStep.ACCOUNT
   );
+
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [profilePicturePreviewURL, setProfilePicturePreviewURL] = useState<
+    string | null
+  >(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleProfileChange: React.ChangeEventHandler<
+    HTMLInputElement
+  > = async (e) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+
+    if (file) {
+      if (file.size > maxSize) {
+        toast({
+          variant: "destructive",
+          title: "Image Error",
+          description: "Currently, the image should not be bigger than 10mb",
+        });
+        return;
+      }
+      setProfilePicture(file);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePicturePreviewURL(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const accountForm = useForm<z.infer<typeof accountFormSchema>>({
     resolver: zodResolver(accountFormSchema),
@@ -133,11 +166,23 @@ function RegisterPage() {
 
       if (foundProfiles.total > 0) throw new Error("Username taken");
 
+      // upload picture first
+      let profileImageId: null | string = null;
+      if (profilePicture) {
+        const picture = await storage.createFile(
+          config.bucketId,
+          currentUser.$id,
+          profilePicture
+        );
+
+        profileImageId = picture.$id;
+      }
+
       const createdProfile = (await databases.createDocument(
         config.dbId,
         config.userProfileCollectionId,
         currentUser.$id,
-        { username, bio },
+        { username, bio, profileImageId },
 
         [
           Permission.update(Role.user(currentUser.$id)),
@@ -303,6 +348,28 @@ function RegisterPage() {
                   onSubmit={profileForm.handleSubmit(onCompleteProfile)}
                   className="space-y-4"
                 >
+                  <FormItem className="flex flex-col items-center">
+                    <div className="">
+                      <Image
+                        className="w-32 h-32 rounded-full "
+                        width={500}
+                        height={500}
+                        alt="business picture"
+                        onClick={() => fileInputRef?.current?.click()}
+                        src={profilePicturePreviewURL ?? defUser}
+                      ></Image>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleProfileChange}
+                          ref={fileInputRef}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormLabel>Profile Picture</FormLabel>
+                  </FormItem>
                   <FormField
                     control={profileForm.control}
                     name="username"
