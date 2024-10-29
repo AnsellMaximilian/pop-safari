@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import defUser from "@/assets/default-user.svg";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,10 +23,8 @@ export default function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar>
-          <AvatarImage src={profilePictureURL ?? ""} />
-          <AvatarFallback>
-            {currentUser ? currentUser.name : "AN"}
-          </AvatarFallback>
+          <AvatarImage src={defUser.src} />
+          <AvatarFallback>{"PS"}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

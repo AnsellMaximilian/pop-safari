@@ -10,6 +10,7 @@ export const config = {
     process.env.NEXT_PUBLIC_USER_PROFILE_COLLECTION_ID
   ),
   businessCollectionId: String(process.env.NEXT_PUBLIC_BUSINESS_COLLECTION_ID),
+  safariCollectionId: String(process.env.NEXT_PUBLIC_SAFARI_COLLECTION_ID),
 };
 
 export const client = new Client();

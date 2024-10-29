@@ -6,7 +6,7 @@ import logo from "@/assets/pop-safari-logo.svg";
 import UserMenu from "@/components/UserMenu";
 import privateRoute from "@/hooks/privateRoute";
 import { UserContextProvider } from "@/contexts/user/UserContextProvider";
-const NavItem = ({ label, href }: { label: string; href: string }) => {
+export const NavItem = ({ label, href }: { label: string; href: string }) => {
   return (
     <li>
       <Link href={href}>{label}</Link>
@@ -20,7 +20,7 @@ function DashboardLayout({
 }>) {
   return (
     <UserContextProvider>
-      <div className="h-screen flex flex-col">
+      {/* <div className="h-screen flex flex-col">
         <header className="p-4 border-b border-border">
           <nav className="flex gap-8 items-center">
             <Image
@@ -42,7 +42,8 @@ function DashboardLayout({
         <div className="container p-4 mx-auto grow flex flex-col">
           {children}
         </div>
-      </div>
+      </div> */}
+      {children}
     </UserContextProvider>
   );
 }
