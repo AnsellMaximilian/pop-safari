@@ -38,6 +38,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUser } from "@/contexts/user/UserContext";
 import { config, databases, storage } from "@/lib/appwrite";
 import { ID, Permission, Role } from "appwrite";
+import { useData } from "@/contexts/data/DataContext";
+import SafariList from "./SafariList";
+import CreateSafari from "./CreateSafari";
 
 export enum SafariPageMode {
   CREATE = "CREATE",
@@ -60,98 +63,8 @@ export default function Page() {
   const mapRef = useRef<HTMLDivElement>(null);
   const [pageMode, setPageMode] = useState<SafariPageMode>(SafariPageMode.VIEW);
 
-  const { toast } = useToast();
-  const { currentUser } = useUser();
-  const [safariImage, setSafariImage] = useState<File | null>(null);
-  const [safariImagePreviewURL, setSafariImagePreviewURL] = useState<
-    string | null
-  >(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { safaris } = useData();
 
-  const [isSafariCreationLoading, setIsSafariCreationLoading] = useState(false);
-
-  const handleSafariImageChange: React.ChangeEventHandler<
-    HTMLInputElement
-  > = async (e) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-
-    if (file) {
-      if (file.size > maxSize) {
-        toast({
-          variant: "destructive",
-          title: "Image Error",
-          description: "Currently, the image should not be bigger than 10mb",
-        });
-        return;
-      }
-      setSafariImage(file);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSafariImagePreviewURL(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const createSafariForm = useForm<z.infer<typeof safariFormSchema>>({
-    resolver: zodResolver(safariFormSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      visibility: SafariVisibility.PRIVATE,
-    },
-  });
-
-  async function onCreateSafari(values: z.infer<typeof safariFormSchema>) {
-    let errorMsg = "Something went wrong.";
-    let hasError = false;
-    if (currentUser === null) return;
-    try {
-      const { title, description, visibility } = values;
-      const safariId = ID.unique();
-      setIsSafariCreationLoading(true);
-      // upload picture first
-      let imageId: null | string = null;
-      if (safariImage) {
-        const picture = await storage.createFile(
-          config.bucketId,
-          safariId,
-          safariImage
-        );
-        imageId = picture.$id;
-      }
-      const createdSafari = (await databases.createDocument(
-        config.dbId,
-        config.safariCollectionId,
-        safariId,
-        {
-          title,
-          description,
-          visibility,
-          imageId,
-          userId: currentUser.$id,
-          memberIds: [],
-        },
-        [
-          Permission.update(Role.user(currentUser.$id)),
-          Permission.delete(Role.user(currentUser.$id)),
-        ]
-      )) as Safari;
-    } catch (error) {
-      if (error instanceof Error) errorMsg = error.message;
-      hasError = true;
-    } finally {
-      if (hasError)
-        toast({
-          title: "Safari Creation Failed",
-          variant: "destructive",
-          description: errorMsg,
-        });
-      setIsSafariCreationLoading(false);
-    }
-  }
   return (
     <Map3D mapRef={mapRef} setMap={setMap} className="fixed inset-0">
       <Card
@@ -166,23 +79,31 @@ export default function Page() {
           <CardTitle className="">Safaris</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-4 items-center mt-16">
-            <Image
-              src={emptySafari}
-              width={500}
-              height={500}
-              alt="empty safari"
-              className="w-64"
-            />
-            {/* <div>Empty...</div> */}
-            <p className="mt-8">
-              Start your own adventures by creating your first{" "}
-              <strong>Safari</strong>
-            </p>
-            <Button onClick={() => setPageMode(SafariPageMode.CREATE)}>
-              Create Safari
-            </Button>
-          </div>
+          {safaris.data.length > 0 ? (
+            <div>
+              <Button onClick={() => setPageMode(SafariPageMode.CREATE)}>
+                Create Safari
+              </Button>
+              <SafariList />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4 items-center mt-16">
+              <Image
+                src={emptySafari}
+                width={500}
+                height={500}
+                alt="empty safari"
+                className="w-64"
+              />
+              <p className="mt-8">
+                Start your own adventures by creating your first{" "}
+                <strong>Safari</strong>
+              </p>
+              <Button onClick={() => setPageMode(SafariPageMode.CREATE)}>
+                Create Safari
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -198,74 +119,9 @@ export default function Page() {
           <CardTitle className="">Create Safari</CardTitle>
         </CardHeader>
         <CardContent>
-          <Form {...createSafariForm}>
-            <form
-              onSubmit={createSafariForm.handleSubmit(onCreateSafari)}
-              className="space-y-4"
-            >
-              <FormItem className="flex flex-col items-center">
-                <div className="w-full">
-                  <Image
-                    className="w-full h-64 border-border border object-cover"
-                    width={500}
-                    height={500}
-                    alt="business picture"
-                    onClick={() => fileInputRef?.current?.click()}
-                    src={safariImagePreviewURL ?? defBusiness}
-                  ></Image>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleSafariImageChange}
-                      ref={fileInputRef}
-                    />
-                  </FormControl>
-                </div>
-                <FormLabel>Safari Image</FormLabel>
-              </FormItem>
-              <FormField
-                control={createSafariForm.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Safari Title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createSafariForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Tell us a little about this safari"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex">
-                <Button
-                  type="submit"
-                  className="ml-auto"
-                  disabled={isSafariCreationLoading}
-                >
-                  Create
-                </Button>
-              </div>
-            </form>
-          </Form>
+          <CreateSafari
+            onFinishCreate={async () => setPageMode(SafariPageMode.VIEW)}
+          />
         </CardContent>
       </Card>
 
