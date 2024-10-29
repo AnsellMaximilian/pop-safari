@@ -42,10 +42,16 @@ export enum SafariVisibility {
   PUBLIC = "PBLC",
 }
 
+export enum SafariStatus {
+  DRAFT = "DRFT",
+  DONE = "DONE",
+}
+
 export type Safari = Models.Document & {
   title: string;
   description?: string;
   imageId?: string;
   visibility: SafariVisibility;
   userId: string;
+  status: SafariStatus;
 };

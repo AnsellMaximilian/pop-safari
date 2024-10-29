@@ -7,7 +7,7 @@ import Map3D from "@/components/Map3D";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import React, { useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -39,6 +39,7 @@ import { useUser } from "@/contexts/user/UserContext";
 import { config, databases, storage } from "@/lib/appwrite";
 import { ID, Permission, Role } from "appwrite";
 import { useData } from "@/contexts/data/DataContext";
+import { SafariPageContext, SafariPageMode } from "./page";
 export const safariFormSchema = z.object({
   title: z.string().min(5).max(50),
   description: z.string().max(500),
@@ -61,6 +62,8 @@ export default function CreateSafari({
   >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { safaris } = useData();
+
+  const { setPageMode } = useContext(SafariPageContext);
 
   const [isSafariCreationLoading, setIsSafariCreationLoading] = useState(false);
   const handleSafariImageChange: React.ChangeEventHandler<
@@ -211,12 +214,15 @@ export default function CreateSafari({
           )}
         />
 
-        <div className="flex">
+        <div className="flex justify-end gap-4">
           <Button
-            type="submit"
-            className="ml-auto"
-            disabled={isSafariCreationLoading}
+            type="button"
+            variant="outline"
+            onClick={() => setPageMode(SafariPageMode.VIEW)}
           >
+            Cancel
+          </Button>
+          <Button type="submit" className="" disabled={isSafariCreationLoading}>
             Create
           </Button>
         </div>
