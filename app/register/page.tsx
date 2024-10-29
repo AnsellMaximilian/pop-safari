@@ -39,6 +39,7 @@ import { useUser } from "@/contexts/user/UserContext";
 import Map3D from "@/components/Map3D";
 import { Textarea } from "@/components/ui/textarea";
 import { UserProfile } from "@/type";
+import { cn } from "@/lib/utils";
 
 enum RegisterStep {
   ACCOUNT = "ACCOUNT",
@@ -241,7 +242,14 @@ function RegisterPage() {
   }
   return (
     <Map3D mapRef={mapRef} className="fixed inset-0" setMap={setMap}>
-      <div className="h-full w-full flex items-center p-4 absolute top-0 z-30">
+      <div
+        className={cn(
+          "h-full flex items-center p-4 absolute top-0 z-30 transition-all duration-1000",
+          registerStep === RegisterStep.ACCOUNT
+            ? "right-full translate-x-full"
+            : "right-0 translate-x-0"
+        )}
+      >
         {registerStep === RegisterStep.ACCOUNT ? (
           <Card
             className="w-full h-full md:w-[500px] max-w-full"
