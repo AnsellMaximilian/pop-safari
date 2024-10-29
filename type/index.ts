@@ -36,8 +36,16 @@ export type Business = Models.Document & {
   profileImageId?: string;
 };
 
+export enum SafariVisibility {
+  FRIENDS = "FRND",
+  PRIVATE = "PRVT",
+  PUBLIC = "PBLC",
+}
+
 export type Safari = Models.Document & {
   title: string;
   description?: string;
-  thumbnailId?: string;
+  imageId?: string;
+  visibility: SafariVisibility;
+  userId: string;
 };
