@@ -19,6 +19,11 @@ import { NavItem } from "../layout";
 import UserMenu from "@/components/UserMenu";
 import emptySafari from "@/assets/empty-safari.svg";
 
+export enum SafariPageMode {
+  CREATE = "CREATE",
+  VIEW = "VIEW",
+}
+
 export default function Page() {
   const [map, setMap] = useState<google.maps.maps3d.Map3DElement | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
