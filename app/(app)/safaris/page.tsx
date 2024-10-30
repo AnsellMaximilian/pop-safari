@@ -11,6 +11,7 @@ import React, {
   createContext,
   Dispatch,
   SetStateAction,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -32,6 +33,11 @@ import CreateSafari from "./CreateSafari";
 import { Safari, SafariStatus } from "@/type";
 import { Badge } from "@/components/ui/badge";
 import SafariView from "./SafariView";
+import { initAutocomplete, loader } from "@/lib/maps";
+import { Input } from "@/components/ui/input";
+import { Map3dEvent } from "@/type/maps";
+import { GENERAL_MARKER_ONE } from "@/const/maps";
+import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
 
 export enum SafariPageMode {
   CREATE = "CREATE",
@@ -62,11 +68,75 @@ export default function Page() {
 
   const { safaris } = useData();
 
+  useEffect(() => {
+    let autocompleteListener: google.maps.MapsEventListener | null = null;
+
+    if (map)
+      initAutocomplete(map, async (place) => {}).then((listener) => {
+        autocompleteListener = listener;
+      });
+
+    return () => {
+      if (autocompleteListener) {
+        google.maps.event.removeListener(autocompleteListener);
+      }
+    };
+  }, [map]);
+
+  useEffect(() => {
+    const handleMapClick: EventListenerOrEventListenerObject = (basicE) => {
+      loader.load().then(async () => {
+        // @ts-ignore
+        const { Marker3DElement } = (await google.maps.importLibrary(
+          "maps3d"
+        )) as google.maps.Maps3DLibrary;
+        const e: Map3dEvent = basicE as Map3dEvent;
+
+        try {
+          const markerWithCustomSvg = await MarkerUtils.createImageMarker(
+            e.position.lat,
+            e.position.lng,
+            "/pop-safari-marker.svg"
+          );
+
+          map?.append(markerWithCustomSvg);
+        } catch (error) {
+          console.log("FAGO");
+          console.log(error);
+        }
+
+        // const marker = new Marker3DElement({
+        //   position: { lat: e.position.lat, lng: e.position.lng },
+        //   label: "Clicked",
+        //   icon: {
+        //     url: "/default-business.svg", // Image path (should be accessible in the public directory or via URL)
+        //     scaledSize: { width: 50, height: 50 }, // Optional: Adjust the image size
+        //   },
+        // });
+
+        // if (map) {
+        //   removeElementsWithClass(GENERAL_MARKER_ONE);
+        //   marker.classList.add(GENERAL_MARKER_ONE);
+        //   map.append(marker);
+        // }
+      });
+    };
+    if (map) {
+      map.addEventListener("gmp-click", handleMapClick);
+    }
+
+    return () => {
+      map?.removeEventListener("gmp-click", handleMapClick);
+    };
+  }, [map]);
   return (
     <SafariPageContext.Provider
       value={{ pageMode, setPageMode, setSelectedSafari, selectedSafari }}
     >
       <Map3D mapRef={mapRef} setMap={setMap} className="fixed inset-0">
+        <div className="absolute left-96 bg-white rounded-md shadow-md p-4 z-10 top-4">
+          <Input id="pac-input" placeholder="Search for place" />
+        </div>
         {selectedSafari && pageMode === SafariPageMode.DETAILS && (
           <SafariView safari={selectedSafari} />
         )}

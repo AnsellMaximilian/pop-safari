@@ -7,6 +7,7 @@ import { ChevronLeftIcon } from "@radix-ui/react-icons";
 import React, { useContext } from "react";
 import { SafariPageContext, SafariPageMode } from "./page";
 import SafariStatusBadge from "./SafariStatusBadge";
+import { Input } from "@/components/ui/input";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const { setPageMode, setSelectedSafari } = useContext(SafariPageContext);
