@@ -134,7 +134,14 @@ export default function Page() {
       value={{ pageMode, setPageMode, setSelectedSafari, selectedSafari }}
     >
       <Map3D mapRef={mapRef} setMap={setMap} className="fixed inset-0">
-        <div className="absolute left-96 bg-white rounded-md shadow-md p-4 z-10 top-4">
+        <div
+          className={cn(
+            "absolute left-96 bg-white rounded-md shadow-md p-4 z-10 top-4 duration-500",
+            pageMode === SafariPageMode.DETAILS
+              ? "translate-y-0"
+              : "-translate-y-[1000px]"
+          )}
+        >
           <Input id="pac-input" placeholder="Search for place" />
         </div>
         {selectedSafari && pageMode === SafariPageMode.DETAILS && (
