@@ -2,23 +2,100 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Safari, SafariStatus } from "@/type";
+import { Safari, SafariSpot, SafariStatus } from "@/type";
 import { ChevronLeftIcon } from "@radix-ui/react-icons";
-import React, { useContext } from "react";
-import { SafariPageContext, SafariPageMode } from "./page";
+import React, { useContext, useState } from "react";
+import { SafariPageContext, SafariPageMode, SafariViewMode } from "./page";
 import SafariStatusBadge from "./SafariStatusBadge";
-import { Input } from "@/components/ui/input";
-import { computeRoute, getBaseRouteRequest, loader } from "@/lib/maps";
+import { MapPin, Search, Box } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import {
-  BUSINESS_REGIS_POLYGON,
-  polylineOptions,
-  ROUTE_POLYLINE,
-} from "@/const/maps";
-import { removeElementsWithClass } from "@/utils/maps";
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import Image from "next/image";
+import { useUser } from "@/contexts/user/UserContext";
+import { useToast } from "@/hooks/use-toast";
+import { config, databases } from "@/lib/appwrite";
+import { ID, Permission, Role } from "appwrite";
+const safariSpotFormSchema = z.object({
+  name: z.string().min(5).max(50),
+  description: z.string().max(500),
+});
 
 export default function SafariView({ safari }: { safari: Safari }) {
-  const { setPageMode, setSelectedSafari, points, map } =
-    useContext(SafariPageContext);
+  const {
+    setPageMode,
+    setSelectedSafari,
+    points,
+    map,
+    selectedSafari,
+    safariViewMode,
+    setSafariViewMode,
+  } = useContext(SafariPageContext);
+
+  const { currentUser } = useUser();
+
+  const { toast } = useToast();
+
+  const [spotCreateLoading, setSpotCreateLoading] = useState(false);
+
+  const safariSpotForm = useForm<z.infer<typeof safariSpotFormSchema>>({
+    resolver: zodResolver(safariSpotFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof safariSpotFormSchema>) {
+    let errorMsg = "Something went wrong.";
+    let hasError = false;
+
+    if (!currentUser || !selectedSafari) return;
+
+    try {
+      setSpotCreateLoading(true);
+
+      const createdSpot = (await databases.createDocument(
+        config.dbId,
+        config.safariStopCollectionId,
+        ID.unique(),
+        {
+          name: values.name,
+          description: values.description,
+          safariId: selectedSafari.$id,
+        },
+        [
+          Permission.update(Role.user(currentUser.$id)),
+          Permission.delete(Role.user(currentUser.$id)),
+        ]
+      )) as SafariSpot;
+    } catch (error) {
+      if (error instanceof Error) errorMsg = error.message;
+      hasError = true;
+    } finally {
+      if (hasError)
+        toast({
+          title: "User Onboarding Failed",
+          variant: "destructive",
+          description: errorMsg,
+        });
+      setSpotCreateLoading(false);
+    }
+  }
+
   return (
     <>
       <div className="absolute top-4 left-4 z-10 bg-white rounded-md shadow-md p-4">
@@ -41,9 +118,96 @@ export default function SafariView({ safari }: { safari: Safari }) {
             </div>
           </div>
         </div>
+        <Separator className="mt-4 mb-2" />
+
+        <ToggleGroup
+          type="multiple"
+          className=""
+          value={[safariViewMode]}
+          onValueChange={(val) => {
+            setSafariViewMode((prev) => {
+              console.log({ val });
+              if (val.length > 0) return val[val.length - 1] as SafariViewMode;
+
+              return SafariViewMode.ROUTE;
+            });
+          }}
+        >
+          <ToggleGroupItem
+            value={SafariViewMode.ROUTE}
+            aria-label="Toggle Route Mode"
+            className="border-border border"
+          >
+            <MapPin className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value={SafariViewMode.SEARCH}
+            aria-label="Toggle Search Mode"
+            className="border-border border"
+          >
+            <Search className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value={SafariViewMode.POLYGON}
+            aria-label="Toggle Polygon Mode"
+            className="border-border border"
+          >
+            <Box className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
-      <div className="absolute top-32 left-4 bg-white rounded-md shadow-md z-10 p-4">
+      <div className="absolute top-44 left-4 bg-white rounded-md shadow-md z-10 p-4 bottom-4">
+        <Form {...safariSpotForm}>
+          <form
+            onSubmit={safariSpotForm.handleSubmit(onSubmit)}
+            className="space-y-4"
+          >
+            <div className="flex gap-4">
+              <div className="space-y-4 grow">
+                <FormField
+                  control={safariSpotForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem className="grow">
+                      <FormLabel>Business Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your business name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={safariSpotForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Your description" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex">
+              <Button
+                type="submit"
+                className="ml-auto"
+                disabled={spotCreateLoading}
+              >
+                Save
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
+
+      {/* <div className="absolute top-44 left-4 bg-white rounded-md shadow-md z-10 p-4">
         <Button
           disabled={points.length < 2}
           onClick={async () => {
@@ -81,7 +245,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
         >
           Route
         </Button>
-      </div>
+      </div> */}
     </>
   );
 }

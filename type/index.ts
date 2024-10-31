@@ -55,3 +55,8 @@ export type Safari = Models.Document & {
   userId: string;
   status: SafariStatus;
 };
+
+export type SafariSpot = Models.Document & {
+  name: string;
+  description?: string;
+};

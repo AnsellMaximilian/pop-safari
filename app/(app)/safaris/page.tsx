@@ -39,6 +39,12 @@ import { LatLng, Map3dEvent } from "@/type/maps";
 import { GENERAL_MARKER_ONE, ROUTE_MARKER } from "@/const/maps";
 import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
 
+export enum SafariViewMode {
+  ROUTE = "ROUTE",
+  SEARCH = "SEARCH",
+  POLYGON = "POLYGON",
+}
+
 export enum SafariPageMode {
   CREATE = "CREATE",
   VIEW = "VIEW",
@@ -56,6 +62,8 @@ export interface SafariPageContextData {
   setMap: Dispatch<SetStateAction<google.maps.maps3d.Map3DElement | null>>;
   points: LatLng[];
   setPoints: SetState<LatLng[]>;
+  safariViewMode: SafariViewMode;
+  setSafariViewMode: SetState<SafariViewMode>;
 }
 
 export const SafariPageContext = createContext<SafariPageContextData>({
@@ -67,12 +75,17 @@ export const SafariPageContext = createContext<SafariPageContextData>({
   setMap: () => {},
   points: [],
   setPoints: () => {},
+  safariViewMode: SafariViewMode.ROUTE,
+  setSafariViewMode: () => {},
 });
 
 export default function Page() {
   const [map, setMap] = useState<google.maps.maps3d.Map3DElement | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const [pageMode, setPageMode] = useState<SafariPageMode>(SafariPageMode.VIEW);
+
+  // When in details mode
+  const [safariViewMode, setSafariViewMode] = useState(SafariViewMode.ROUTE);
 
   const [selectedSafari, setSelectedSafari] = useState<Safari | null>(null);
 
@@ -161,6 +174,8 @@ export default function Page() {
         setMap,
         points,
         setPoints,
+        safariViewMode,
+        setSafariViewMode,
       }}
     >
       <Map3D mapRef={mapRef} setMap={setMap} className="fixed inset-0">
