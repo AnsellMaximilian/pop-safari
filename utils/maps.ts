@@ -33,7 +33,7 @@ export class MarkerUtils {
     lat: number,
     lng: number,
     imageUrl: string,
-    imageOptions?: { width: number; height?: number }
+    className: string
   ) {
     // @ts-ignore
     const { Marker3DElement } = (await google.maps.importLibrary(
@@ -49,6 +49,8 @@ export class MarkerUtils {
 
     const template = document.createElement("template");
     template.content.append(img);
+
+    marker.classList.add(className);
 
     marker.append(template);
 

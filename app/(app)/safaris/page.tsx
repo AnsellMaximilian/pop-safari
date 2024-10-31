@@ -35,8 +35,8 @@ import { Badge } from "@/components/ui/badge";
 import SafariView from "./SafariView";
 import { initAutocomplete, loader } from "@/lib/maps";
 import { Input } from "@/components/ui/input";
-import { Map3dEvent } from "@/type/maps";
-import { GENERAL_MARKER_ONE } from "@/const/maps";
+import { LatLng, Map3dEvent } from "@/type/maps";
+import { GENERAL_MARKER_ONE, ROUTE_MARKER } from "@/const/maps";
 import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
 
 export enum SafariPageMode {
@@ -45,11 +45,17 @@ export enum SafariPageMode {
   DETAILS = "DETAILS",
 }
 
+export type SetState<T> = Dispatch<SetStateAction<T>>;
+
 export interface SafariPageContextData {
   pageMode: SafariPageMode;
   setPageMode: Dispatch<SetStateAction<SafariPageMode>>;
   selectedSafari: Safari | null;
   setSelectedSafari: Dispatch<SetStateAction<Safari | null>>;
+  map: google.maps.maps3d.Map3DElement | null;
+  setMap: Dispatch<SetStateAction<google.maps.maps3d.Map3DElement | null>>;
+  points: LatLng[];
+  setPoints: SetState<LatLng[]>;
 }
 
 export const SafariPageContext = createContext<SafariPageContextData>({
@@ -57,6 +63,10 @@ export const SafariPageContext = createContext<SafariPageContextData>({
   setPageMode: () => {},
   setSelectedSafari: () => {},
   selectedSafari: null,
+  map: null,
+  setMap: () => {},
+  points: [],
+  setPoints: () => {},
 });
 
 export default function Page() {
@@ -67,6 +77,8 @@ export default function Page() {
   const [selectedSafari, setSelectedSafari] = useState<Safari | null>(null);
 
   const { safaris } = useData();
+
+  const [points, setPoints] = useState<LatLng[]>([]);
 
   useEffect(() => {
     let autocompleteListener: google.maps.MapsEventListener | null = null;
@@ -91,19 +103,28 @@ export default function Page() {
           "maps3d"
         )) as google.maps.Maps3DLibrary;
         const e: Map3dEvent = basicE as Map3dEvent;
+        const latLng: LatLng = {
+          latitude: e.position.lat,
+          longitude: e.position.lng,
+        };
 
-        try {
-          const markerWithCustomSvg = await MarkerUtils.createImageMarker(
-            e.position.lat,
-            e.position.lng,
-            "/pop-safari-marker.svg"
-          );
+        setPoints((prev) => {
+          const newVal =
+            prev.length >= 2 ? [prev[1], latLng] : [...prev, latLng];
+          removeElementsWithClass(ROUTE_MARKER);
 
-          map?.append(markerWithCustomSvg);
-        } catch (error) {
-          console.log("FAGO");
-          console.log(error);
-        }
+          newVal.forEach(async (latLng) => {
+            const markerWithCustomSvg = await MarkerUtils.createImageMarker(
+              latLng.latitude,
+              latLng.longitude,
+              "/pop-safari-marker.svg",
+              ROUTE_MARKER
+            );
+
+            map?.append(markerWithCustomSvg);
+          });
+          return newVal;
+        });
 
         // const marker = new Marker3DElement({
         //   position: { lat: e.position.lat, lng: e.position.lng },
@@ -131,7 +152,16 @@ export default function Page() {
   }, [map]);
   return (
     <SafariPageContext.Provider
-      value={{ pageMode, setPageMode, setSelectedSafari, selectedSafari }}
+      value={{
+        pageMode,
+        setPageMode,
+        setSelectedSafari,
+        selectedSafari,
+        map,
+        setMap,
+        points,
+        setPoints,
+      }}
     >
       <Map3D mapRef={mapRef} setMap={setMap} className="fixed inset-0">
         <div

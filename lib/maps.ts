@@ -1,6 +1,8 @@
 import { NEARBY_MARKER, SEARCH_PLACE_MARKER } from "@/const/maps";
+import { LatLng, RouteRequest, RouteResponse } from "@/type/maps";
 import { removeElementsWithClass } from "@/utils/maps";
 import { Loader } from "@googlemaps/js-api-loader";
+import axios from "axios";
 
 export const loader = new Loader({
   apiKey: String(process.env.NEXT_PUBLIC_MAPS_API_KEY),
@@ -184,4 +186,68 @@ export async function getNearbyPlaces(
     });
   }
   return places;
+}
+
+export async function computeRoute(
+  request: RouteRequest
+): Promise<RouteResponse> {
+  try {
+    const response = await axios.post<RouteResponse>(
+      "https://routes.googleapis.com/directions/v2:computeRoutes",
+      {
+        ...request,
+        units: "METRIC", // Ensuring units are set to Metric
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": String(process.env.NEXT_PUBLIC_MAPS_API_KEY),
+          "X-Goog-FieldMask":
+            // "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs,routes.legs.steps,routes.legs.distanceMeters,routes.legs.duration,routes.legs.steps.polyline.encodedPolyline",
+            "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error computing route:", error);
+    throw error;
+  }
+}
+
+export function getBaseRouteRequest(
+  originLatLng: LatLng,
+  destinationLatLng: LatLng
+) {
+  // Example usage of computeRoute function
+  const routeRequest: RouteRequest = {
+    origin: {
+      location: {
+        latLng: {
+          latitude: originLatLng.latitude,
+          longitude: originLatLng.longitude,
+        },
+      },
+    },
+    destination: {
+      location: {
+        latLng: {
+          latitude: destinationLatLng.latitude,
+          longitude: destinationLatLng.longitude,
+        },
+      },
+    },
+    travelMode: "DRIVE",
+    routingPreference: "TRAFFIC_AWARE",
+    computeAlternativeRoutes: false,
+    routeModifiers: {
+      avoidTolls: false,
+      avoidHighways: false,
+      avoidFerries: false,
+    },
+    languageCode: "en-US",
+  };
+
+  return routeRequest;
 }

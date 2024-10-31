@@ -103,3 +103,111 @@ export interface PlaceDisplay {
   name: string;
   photo?: string;
 }
+
+export interface LatLng {
+  latitude: number;
+  longitude: number;
+}
+
+export interface RouteStep {
+  distanceMeters: number;
+  staticDuration: string;
+  polyline: {
+    encodedPolyline: string;
+  };
+  startLocation: {
+    latLng: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  endLocation: {
+    latLng: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  navigationInstruction: {
+    maneuver: string;
+    instructions: string;
+  };
+  localizedValues: {
+    distance: {
+      text: string;
+    };
+    staticDuration: {
+      text: string;
+    };
+  };
+  travelMode: "DRIVE" | "WALK" | "BICYCLE" | "TRANSIT";
+}
+
+// RouteLeg type
+export interface RouteLeg {
+  distanceMeters: number;
+  duration: string;
+  staticDuration: string;
+  polyline: {
+    encodedPolyline: string;
+  };
+  startLocation: {
+    latLng: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  endLocation: {
+    latLng: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  steps: RouteStep[];
+  localizedValues: {
+    distance: {
+      text: string;
+    };
+    duration: {
+      text: string;
+    };
+    staticDuration: {
+      text: string;
+    };
+  };
+}
+
+export interface RouteRequest {
+  origin: {
+    location: {
+      latLng: LatLng;
+    };
+  };
+  destination: {
+    location: {
+      latLng: LatLng;
+    };
+  };
+  travelMode: "DRIVE" | "BICYCLE" | "WALK" | "TRANSIT";
+  routingPreference?: "TRAFFIC_AWARE" | "TRAFFIC_UNAWARE";
+  computeAlternativeRoutes?: boolean;
+  routeModifiers?: {
+    avoidTolls?: boolean;
+    avoidHighways?: boolean;
+    avoidFerries?: boolean;
+  };
+  languageCode?: string;
+  units?: "METRIC";
+}
+
+// Response type for route function
+export interface RouteResponse {
+  routes: Array<{
+    legs: RouteLeg[];
+
+    duration: string; // e.g., "15 mins"
+    distanceMeters: number;
+    polyline: {
+      encodedPolyline: string;
+    };
+  }>;
+}
