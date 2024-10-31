@@ -9,6 +9,12 @@ import { SafariPageContext, SafariPageMode } from "./page";
 import SafariStatusBadge from "./SafariStatusBadge";
 import { Input } from "@/components/ui/input";
 import { computeRoute, getBaseRouteRequest, loader } from "@/lib/maps";
+import {
+  BUSINESS_REGIS_POLYGON,
+  polylineOptions,
+  ROUTE_POLYLINE,
+} from "@/const/maps";
+import { removeElementsWithClass } from "@/utils/maps";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const { setPageMode, setSelectedSafari, points, map } =
@@ -37,7 +43,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
         </div>
       </div>
 
-      <div className="absolute top-16 left-4 bg-white rounded-md shadow-md z-10 p-4">
+      <div className="absolute top-32 left-4 bg-white rounded-md shadow-md z-10 p-4">
         <Button
           disabled={points.length < 2}
           onClick={async () => {
@@ -54,6 +60,20 @@ export default function SafariView({ safari }: { safari: Safari }) {
                 res.routes[0].polyline.encodedPolyline
               );
               console.log(decodedPath);
+
+              removeElementsWithClass(ROUTE_POLYLINE);
+
+              const polyline = new google.maps.maps3d.Polyline3DElement(
+                polylineOptions
+              );
+
+              polyline.coordinates = decodedPath.map((p) => ({
+                lat: p.lat(),
+                lng: p.lng(),
+              }));
+              polyline.classList.add(ROUTE_POLYLINE);
+
+              map?.append(polyline);
             });
 
             console.log(res);

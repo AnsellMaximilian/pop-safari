@@ -1,4 +1,5 @@
 export interface Map3dEvent extends Event {
+  placeId?: string;
   position: {
     Eg: number;
     Fg: number;
