@@ -1,5 +1,5 @@
 import { NEARBY_MARKER, SEARCH_PLACE_MARKER } from "@/const/maps";
-import { LatLng, RouteRequest, RouteResponse } from "@/type/maps";
+import { LatLng, PlaceData, RouteRequest, RouteResponse } from "@/type/maps";
 import { removeElementsWithClass } from "@/utils/maps";
 import { Loader } from "@googlemaps/js-api-loader";
 import axios from "axios";
@@ -250,4 +250,21 @@ export function getBaseRouteRequest(
   };
 
   return routeRequest;
+}
+
+export async function getPlaceDetails(
+  placeId: string
+): Promise<PlaceData | null> {
+  try {
+    const placeDetails = (await axios.get(
+      `https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,photos,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,formattedAddress,location,types,viewport,rating&key=${String(
+        process.env.NEXT_PUBLIC_MAPS_API_KEY
+      )}`
+    )) as { data: PlaceData };
+
+    return placeDetails.data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
 }

@@ -29,6 +29,7 @@ import { useUser } from "@/contexts/user/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { config, databases } from "@/lib/appwrite";
 import { ID, Permission, Role } from "appwrite";
+import PlaceDisplay from "@/components/PlaceDisplay";
 const safariSpotFormSchema = z.object({
   name: z.string().min(5).max(50),
   description: z.string().max(500),
@@ -43,6 +44,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
     selectedSafari,
     safariViewMode,
     setSafariViewMode,
+    place,
   } = useContext(SafariPageContext);
 
   const { currentUser } = useUser();
@@ -170,9 +172,12 @@ export default function SafariView({ safari }: { safari: Safari }) {
                   name="name"
                   render={({ field }) => (
                     <FormItem className="grow">
-                      <FormLabel>Business Name</FormLabel>
+                      <FormLabel>Activity Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your business name" {...field} />
+                        <Input
+                          placeholder="What do you plan to do here?"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -185,7 +190,10 @@ export default function SafariView({ safari }: { safari: Safari }) {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Your description" {...field} />
+                        <Textarea
+                          placeholder="Describe your activity"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -206,6 +214,12 @@ export default function SafariView({ safari }: { safari: Safari }) {
           </form>
         </Form>
       </div>
+
+      {place && (
+        <div className="absolute right-4 top-44 bottom-4 rounded-md shadow-md z-10 bg-white p-4">
+          <PlaceDisplay place={place} />
+        </div>
+      )}
 
       {/* <div className="absolute top-44 left-4 bg-white rounded-md shadow-md z-10 p-4">
         <Button

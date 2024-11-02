@@ -33,9 +33,9 @@ import CreateSafari from "./CreateSafari";
 import { Safari, SafariStatus } from "@/type";
 import { Badge } from "@/components/ui/badge";
 import SafariView from "./SafariView";
-import { initAutocomplete, loader } from "@/lib/maps";
+import { getPlaceDetails, initAutocomplete, loader } from "@/lib/maps";
 import { Input } from "@/components/ui/input";
-import { LatLng, Map3dEvent } from "@/type/maps";
+import { LatLng, Map3dEvent, PlaceData } from "@/type/maps";
 import { GENERAL_MARKER_ONE, ROUTE_MARKER } from "@/const/maps";
 import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
 
@@ -64,6 +64,8 @@ export interface SafariPageContextData {
   setPoints: SetState<LatLng[]>;
   safariViewMode: SafariViewMode;
   setSafariViewMode: SetState<SafariViewMode>;
+  place: PlaceData | null;
+  setPlace: SetState<PlaceData | null>;
 }
 
 export const SafariPageContext = createContext<SafariPageContextData>({
@@ -77,6 +79,8 @@ export const SafariPageContext = createContext<SafariPageContextData>({
   setPoints: () => {},
   safariViewMode: SafariViewMode.ROUTE,
   setSafariViewMode: () => {},
+  place: null,
+  setPlace: () => {},
 });
 
 export default function Page() {
@@ -92,6 +96,9 @@ export default function Page() {
   const { safaris } = useData();
 
   const [points, setPoints] = useState<LatLng[]>([]);
+
+  const [place, setPlace] = useState<PlaceData | null>(null);
+  const [nearbyPlaces, setNearbyPlaces] = useState([]);
 
   useEffect(() => {
     let autocompleteListener: google.maps.MapsEventListener | null = null;
@@ -120,6 +127,12 @@ export default function Page() {
           latitude: e.position.lat,
           longitude: e.position.lng,
         };
+        if (e.placeId) {
+          const placeDetails = await getPlaceDetails(e.placeId);
+
+          console.log(placeDetails);
+          setPlace(placeDetails);
+        }
 
         setPoints((prev) => {
           const newVal =
@@ -176,6 +189,8 @@ export default function Page() {
         setPoints,
         safariViewMode,
         setSafariViewMode,
+        place,
+        setPlace,
       }}
     >
       <Map3D mapRef={mapRef} setMap={setMap} className="fixed inset-0">

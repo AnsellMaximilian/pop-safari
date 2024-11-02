@@ -97,6 +97,7 @@ export interface PlaceData {
   userRatingCount?: number;
   displayName?: DisplayName;
   photos?: PlacePhoto[];
+  rating?: number;
 }
 
 export interface PlaceDisplay {
