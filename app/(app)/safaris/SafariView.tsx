@@ -7,7 +7,7 @@ import { ChevronLeftIcon } from "@radix-ui/react-icons";
 import React, { useContext, useState } from "react";
 import { SafariPageContext, SafariPageMode, SafariViewMode } from "./page";
 import SafariStatusBadge from "./SafariStatusBadge";
-import { MapPin, Search, Box } from "lucide-react";
+import { MapPin, Search, Box, MapPinHouse } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useForm } from "react-hook-form";
@@ -24,6 +24,7 @@ import PlaceDisplay from "@/components/PlaceDisplay";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import SafariCreateForm from "./SafariCreateForm";
+import CollapsibleController from "@/components/CollapsibleController";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -104,24 +105,29 @@ export default function SafariView({ safari }: { safari: Safari }) {
       {currentPoint && <SafariCreateForm />}
 
       {place && (
-        <div className="absolute right-4 top-44 bottom-4 rounded-md shadow-md z-10 bg-white p-4">
-          <PlaceDisplay place={place} />
-          <div className="mt-4">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="associate-place"
-                checked={!!extraSpotData?.placeId}
-                onCheckedChange={(val) => {
-                  setExtraSpotData((prev) => ({
-                    ...prev,
-                    placeId: val ? place.id : undefined,
-                  }));
-                }}
-              />
-              <Label htmlFor="associate-place">Connect to Activity</Label>
+        <CollapsibleController
+          className="absolute right-4 top-44 bottom-4 z-10"
+          OpenIcon={MapPinHouse}
+        >
+          <div className="rounded-md shadow-md bg-white p-4 max-w-[500px] grow">
+            <PlaceDisplay place={place} />
+            <div className="mt-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="associate-place"
+                  checked={!!extraSpotData?.placeId}
+                  onCheckedChange={(val) => {
+                    setExtraSpotData((prev) => ({
+                      ...prev,
+                      placeId: val ? place.id : undefined,
+                    }));
+                  }}
+                />
+                <Label htmlFor="associate-place">Connect to Activity</Label>
+              </div>
             </div>
           </div>
-        </div>
+        </CollapsibleController>
       )}
 
       {/* <div className="absolute top-44 left-4 bg-white rounded-md shadow-md z-10 p-4">

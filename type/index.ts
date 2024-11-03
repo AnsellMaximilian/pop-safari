@@ -1,4 +1,5 @@
 import { Models } from "appwrite";
+import { LucideProps } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 
 export type ApiResponse<T> = {
@@ -64,3 +65,7 @@ export type SafariSpot = Models.Document & {
   placeId?: string;
   order: number;
 };
+
+export type LucideIcon = React.ForwardRefExoticComponent<
+  Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
+>;

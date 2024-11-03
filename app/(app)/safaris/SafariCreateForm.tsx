@@ -84,7 +84,7 @@ export default function SafariCreateForm() {
           placeId: extraSpotData?.placeId ? extraSpotData.placeId : null,
           lat: currentPoint.latitude,
           lng: currentPoint.longitude,
-          order: safariSpots.length + 1,
+          order: safariSpots[safariSpots.length - 1].order + 1,
         },
         [
           Permission.update(Role.user(currentUser.$id)),
@@ -111,7 +111,7 @@ export default function SafariCreateForm() {
   }
 
   return (
-    <div className="absolute top-44 left-4 bg-white rounded-md shadow-md z-10 p-4 bottom-4 min-w-[500px] overflow-auto">
+    <div className="absolute top-44 left-4 bg-white rounded-md shadow-md z-10 p-4 bottom-4 w-[500px] overflow-auto">
       <h2 className="font-semibold">Create a Stop in Your Journey</h2>
 
       <div className="p-4 rounded-md border border-border mt-2 bg-secondary text-secondary-foreground">
