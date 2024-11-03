@@ -218,7 +218,8 @@ export async function computeRoute(
 
 export function getBaseRouteRequest(
   originLatLng: LatLng,
-  destinationLatLng: LatLng
+  destinationLatLng: LatLng,
+  intermediates: LatLng[]
 ) {
   // Example usage of computeRoute function
   const routeRequest: RouteRequest = {
@@ -238,6 +239,14 @@ export function getBaseRouteRequest(
         },
       },
     },
+    intermediates: intermediates.map((i) => ({
+      location: {
+        latLng: {
+          latitude: i.latitude,
+          longitude: i.longitude,
+        },
+      },
+    })),
     travelMode: "DRIVE",
     routingPreference: "TRAFFIC_AWARE",
     computeAlternativeRoutes: false,
@@ -257,7 +266,7 @@ export async function getPlaceDetails(
 ): Promise<PlaceData | null> {
   try {
     const placeDetails = (await axios.get(
-      `https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,photos,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,formattedAddress,location,types,viewport,rating&key=${String(
+      `https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,photos,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,formattedAddress,location,types,viewport&key=${String(
         process.env.NEXT_PUBLIC_MAPS_API_KEY
       )}`
     )) as { data: PlaceData };

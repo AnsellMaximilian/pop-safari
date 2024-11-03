@@ -11,16 +11,7 @@ import { MapPin, Search, Box } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,10 +21,9 @@ import { useToast } from "@/hooks/use-toast";
 import { config, databases } from "@/lib/appwrite";
 import { ID, Permission, Role } from "appwrite";
 import PlaceDisplay from "@/components/PlaceDisplay";
-const safariSpotFormSchema = z.object({
-  name: z.string().min(5).max(50),
-  description: z.string().max(500),
-});
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import SafariCreateForm from "./SafariCreateForm";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -45,58 +35,10 @@ export default function SafariView({ safari }: { safari: Safari }) {
     safariViewMode,
     setSafariViewMode,
     place,
+    extraSpotData,
+    setExtraSpotData,
+    currentPoint,
   } = useContext(SafariPageContext);
-
-  const { currentUser } = useUser();
-
-  const { toast } = useToast();
-
-  const [spotCreateLoading, setSpotCreateLoading] = useState(false);
-
-  const safariSpotForm = useForm<z.infer<typeof safariSpotFormSchema>>({
-    resolver: zodResolver(safariSpotFormSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof safariSpotFormSchema>) {
-    let errorMsg = "Something went wrong.";
-    let hasError = false;
-
-    if (!currentUser || !selectedSafari) return;
-
-    try {
-      setSpotCreateLoading(true);
-
-      const createdSpot = (await databases.createDocument(
-        config.dbId,
-        config.safariStopCollectionId,
-        ID.unique(),
-        {
-          name: values.name,
-          description: values.description,
-          safariId: selectedSafari.$id,
-        },
-        [
-          Permission.update(Role.user(currentUser.$id)),
-          Permission.delete(Role.user(currentUser.$id)),
-        ]
-      )) as SafariSpot;
-    } catch (error) {
-      if (error instanceof Error) errorMsg = error.message;
-      hasError = true;
-    } finally {
-      if (hasError)
-        toast({
-          title: "User Onboarding Failed",
-          variant: "destructive",
-          description: errorMsg,
-        });
-      setSpotCreateLoading(false);
-    }
-  }
 
   return (
     <>
@@ -159,65 +101,26 @@ export default function SafariView({ safari }: { safari: Safari }) {
         </ToggleGroup>
       </div>
 
-      <div className="absolute top-44 left-4 bg-white rounded-md shadow-md z-10 p-4 bottom-4">
-        <Form {...safariSpotForm}>
-          <form
-            onSubmit={safariSpotForm.handleSubmit(onSubmit)}
-            className="space-y-4"
-          >
-            <div className="flex gap-4">
-              <div className="space-y-4 grow">
-                <FormField
-                  control={safariSpotForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem className="grow">
-                      <FormLabel>Activity Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="What do you plan to do here?"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={safariSpotForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Describe your activity"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="flex">
-              <Button
-                type="submit"
-                className="ml-auto"
-                disabled={spotCreateLoading}
-              >
-                Save
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
+      {currentPoint && <SafariCreateForm />}
 
       {place && (
         <div className="absolute right-4 top-44 bottom-4 rounded-md shadow-md z-10 bg-white p-4">
           <PlaceDisplay place={place} />
+          <div className="mt-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="associate-place"
+                checked={!!extraSpotData?.placeId}
+                onCheckedChange={(val) => {
+                  setExtraSpotData((prev) => ({
+                    ...prev,
+                    placeId: val ? place.id : undefined,
+                  }));
+                }}
+              />
+              <Label htmlFor="associate-place">Connect to Activity</Label>
+            </div>
+          </div>
         </div>
       )}
 

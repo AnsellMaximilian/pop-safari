@@ -1,12 +1,9 @@
 "use client";
 import logo from "@/assets/pop-safari-logo.svg";
-import { z } from "zod";
-import defBusiness from "@/assets/default-business.svg";
 
 import Map3D from "@/components/Map3D";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import React, {
   createContext,
   Dispatch,
@@ -15,14 +12,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { NavItem } from "../layout";
 import UserMenu from "@/components/UserMenu";
@@ -30,14 +20,31 @@ import emptySafari from "@/assets/empty-safari.svg";
 import { useData } from "@/contexts/data/DataContext";
 import SafariList from "./SafariList";
 import CreateSafari from "./CreateSafari";
-import { Safari, SafariStatus } from "@/type";
-import { Badge } from "@/components/ui/badge";
+import { Safari, SafariSpot } from "@/type";
 import SafariView from "./SafariView";
-import { getPlaceDetails, initAutocomplete, loader } from "@/lib/maps";
+import {
+  computeRoute,
+  getBaseRouteRequest,
+  getPlaceDetails,
+  initAutocomplete,
+  loader,
+} from "@/lib/maps";
 import { Input } from "@/components/ui/input";
 import { LatLng, Map3dEvent, PlaceData } from "@/type/maps";
-import { GENERAL_MARKER_ONE, ROUTE_MARKER } from "@/const/maps";
+import {
+  polylineOptions,
+  ROUTE_MARKER,
+  ROUTE_POLYLINE,
+  SAFARI_SPOT,
+} from "@/const/maps";
 import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
+import { config, databases } from "@/lib/appwrite";
+import { Query } from "appwrite";
+import { excludeStartAndEnd } from "@/utils/common";
+
+export interface ExtraSpotData {
+  placeId?: string;
+}
 
 export enum SafariViewMode {
   ROUTE = "ROUTE",
@@ -66,6 +73,16 @@ export interface SafariPageContextData {
   setSafariViewMode: SetState<SafariViewMode>;
   place: PlaceData | null;
   setPlace: SetState<PlaceData | null>;
+
+  // spot creation
+  extraSpotData: null | ExtraSpotData;
+  setExtraSpotData: SetState<null | ExtraSpotData>;
+
+  currentPoint: null | LatLng;
+  setCurrentPoint: SetState<null | LatLng>;
+
+  safariSpots: SafariSpot[];
+  setSafariSpots: SetState<SafariSpot[]>;
 }
 
 export const SafariPageContext = createContext<SafariPageContextData>({
@@ -81,6 +98,15 @@ export const SafariPageContext = createContext<SafariPageContextData>({
   setSafariViewMode: () => {},
   place: null,
   setPlace: () => {},
+
+  extraSpotData: null,
+  setExtraSpotData: () => {},
+
+  currentPoint: null,
+  setCurrentPoint: () => {},
+
+  safariSpots: [],
+  setSafariSpots: () => {},
 });
 
 export default function Page() {
@@ -99,6 +125,15 @@ export default function Page() {
 
   const [place, setPlace] = useState<PlaceData | null>(null);
   const [nearbyPlaces, setNearbyPlaces] = useState([]);
+
+  // Spot
+  const [extraSpotData, setExtraSpotData] = useState<null | ExtraSpotData>(
+    null
+  );
+
+  const [safariSpots, setSafariSpots] = useState<SafariSpot[]>([]);
+
+  const [currentPoint, setCurrentPoint] = useState<LatLng | null>(null);
 
   useEffect(() => {
     let autocompleteListener: google.maps.MapsEventListener | null = null;
@@ -127,30 +162,28 @@ export default function Page() {
           latitude: e.position.lat,
           longitude: e.position.lng,
         };
+
+        setCurrentPoint(latLng);
         if (e.placeId) {
+          console.log(e.placeId);
           const placeDetails = await getPlaceDetails(e.placeId);
 
-          console.log(placeDetails);
           setPlace(placeDetails);
+        } else {
+          setPlace(null);
+          setExtraSpotData((prev) => ({ ...prev, placeId: undefined }));
         }
 
-        setPoints((prev) => {
-          const newVal =
-            prev.length >= 2 ? [prev[1], latLng] : [...prev, latLng];
-          removeElementsWithClass(ROUTE_MARKER);
+        removeElementsWithClass(ROUTE_MARKER);
 
-          newVal.forEach(async (latLng) => {
-            const markerWithCustomSvg = await MarkerUtils.createImageMarker(
-              latLng.latitude,
-              latLng.longitude,
-              "/pop-safari-marker.svg",
-              ROUTE_MARKER
-            );
+        const markerWithCustomSvg = await MarkerUtils.createImageMarker(
+          latLng.latitude,
+          latLng.longitude,
+          "/pop-safari-marker.svg",
+          ROUTE_MARKER
+        );
 
-            map?.append(markerWithCustomSvg);
-          });
-          return newVal;
-        });
+        map?.append(markerWithCustomSvg);
 
         // const marker = new Marker3DElement({
         //   position: { lat: e.position.lat, lng: e.position.lng },
@@ -176,6 +209,88 @@ export default function Page() {
       map?.removeEventListener("gmp-click", handleMapClick);
     };
   }, [map]);
+
+  useEffect(() => {
+    (async () => {
+      if (selectedSafari) {
+        removeElementsWithClass(SAFARI_SPOT);
+        removeElementsWithClass(ROUTE_POLYLINE);
+
+        const spots = (
+          await databases.listDocuments(
+            config.dbId,
+            config.safariStopCollectionId,
+            [
+              Query.equal("safariId", selectedSafari.$id),
+              Query.orderAsc("order"),
+            ]
+          )
+        ).documents as SafariSpot[];
+        setSafariSpots(spots);
+      }
+    })();
+  }, [selectedSafari]);
+
+  useEffect(() => {
+    (async () => {
+      if (map && safariSpots.length > 0) {
+        // markers
+        removeElementsWithClass(SAFARI_SPOT);
+        safariSpots.forEach(async (s) => {
+          const markerWithCustomSvg = await MarkerUtils.createImageMarker(
+            s.lat,
+            s.lng,
+            "/spot-marker.svg",
+            SAFARI_SPOT
+          );
+
+          map?.append(markerWithCustomSvg);
+        });
+
+        if (safariSpots.length < 2) return;
+
+        // route
+        const res = await computeRoute(
+          getBaseRouteRequest(
+            { latitude: safariSpots[0].lat, longitude: safariSpots[0].lng },
+            {
+              latitude: safariSpots[safariSpots.length - 1].lat,
+              longitude: safariSpots[safariSpots.length - 1].lng,
+            },
+            excludeStartAndEnd(safariSpots).map((s) => ({
+              latitude: s.lat,
+              longitude: s.lng,
+            }))
+          )
+        );
+
+        loader.load().then(async () => {
+          const { encoding } = (await google.maps.importLibrary(
+            "geometry"
+          )) as google.maps.GeometryLibrary;
+
+          const decodedPath = encoding.decodePath(
+            res.routes[0].polyline.encodedPolyline
+          );
+          console.log(decodedPath);
+
+          removeElementsWithClass(ROUTE_POLYLINE);
+
+          const polyline = new google.maps.maps3d.Polyline3DElement(
+            polylineOptions
+          );
+
+          polyline.coordinates = decodedPath.map((p) => ({
+            lat: p.lat(),
+            lng: p.lng(),
+          }));
+          polyline.classList.add(ROUTE_POLYLINE);
+
+          map?.append(polyline);
+        });
+      }
+    })();
+  }, [safariSpots, map]);
   return (
     <SafariPageContext.Provider
       value={{
@@ -191,6 +306,12 @@ export default function Page() {
         setSafariViewMode,
         place,
         setPlace,
+        extraSpotData,
+        setExtraSpotData,
+        currentPoint,
+        setCurrentPoint,
+        safariSpots,
+        setSafariSpots,
       }}
     >
       <Map3D mapRef={mapRef} setMap={setMap} className="fixed inset-0">

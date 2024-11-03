@@ -59,4 +59,8 @@ export type Safari = Models.Document & {
 export type SafariSpot = Models.Document & {
   name: string;
   description?: string;
+  lat: number;
+  lng: number;
+  placeId?: string;
+  order: number;
 };

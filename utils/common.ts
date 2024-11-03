@@ -52,3 +52,9 @@ export function truncateString(str: string, maxLength: number = 25): string {
   }
   return str.slice(0, maxLength - 3) + "...";
 }
+
+export function excludeStartAndEnd<T>(arr: T[]) {
+  const slicedArray = arr.slice(1, arr.length - 1);
+
+  return slicedArray;
+}

@@ -97,7 +97,6 @@ export interface PlaceData {
   userRatingCount?: number;
   displayName?: DisplayName;
   photos?: PlacePhoto[];
-  rating?: number;
 }
 
 export interface PlaceDisplay {
@@ -178,17 +177,16 @@ export interface RouteLeg {
   };
 }
 
+export interface RouteLocation {
+  location: {
+    latLng: LatLng;
+  };
+}
+
 export interface RouteRequest {
-  origin: {
-    location: {
-      latLng: LatLng;
-    };
-  };
-  destination: {
-    location: {
-      latLng: LatLng;
-    };
-  };
+  origin: RouteLocation;
+  destination: RouteLocation;
+  intermediates: RouteLocation[];
   travelMode: "DRIVE" | "BICYCLE" | "WALK" | "TRANSIT";
   routingPreference?: "TRAFFIC_AWARE" | "TRAFFIC_UNAWARE";
   computeAlternativeRoutes?: boolean;
