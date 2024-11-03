@@ -106,6 +106,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
 
       {place && (
         <CollapsibleController
+          key={place.id}
           className="absolute right-4 top-44 bottom-4 z-10"
           OpenIcon={MapPinHouse}
         >
