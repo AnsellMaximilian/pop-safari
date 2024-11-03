@@ -7,7 +7,15 @@ import { ChevronLeftIcon } from "@radix-ui/react-icons";
 import React, { useContext, useState } from "react";
 import { SafariPageContext, SafariPageMode, SafariViewMode } from "./page";
 import SafariStatusBadge from "./SafariStatusBadge";
-import { MapPin, Search, Box, MapPinHouse, BoxIcon } from "lucide-react";
+import {
+  MapPin,
+  Search,
+  Box,
+  MapPinHouse,
+  BoxIcon,
+  Home,
+  Info,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useForm } from "react-hook-form";
@@ -26,6 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import SafariCreateForm from "./SafariCreateForm";
 import CollapsibleController from "@/components/CollapsibleController";
 import PolygonControls from "./PolygonControls";
+import SafariDetails from "./SafariDetails";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -40,6 +49,8 @@ export default function SafariView({ safari }: { safari: Safari }) {
     extraSpotData,
     setExtraSpotData,
     currentPoint,
+    safariPolygons,
+    safariSpots,
   } = useContext(SafariPageContext);
 
   return (
@@ -75,10 +86,17 @@ export default function SafariView({ safari }: { safari: Safari }) {
               console.log({ val });
               if (val.length > 0) return val[val.length - 1] as SafariViewMode;
 
-              return SafariViewMode.ROUTE;
+              return SafariViewMode.HOME;
             });
           }}
         >
+          <ToggleGroupItem
+            value={SafariViewMode.HOME}
+            aria-label="Toggle Home Mode"
+            className="border-border border"
+          >
+            <Home className="h-4 w-4" />
+          </ToggleGroupItem>
           <ToggleGroupItem
             value={SafariViewMode.ROUTE}
             aria-label="Toggle Route Mode"
@@ -102,6 +120,20 @@ export default function SafariView({ safari }: { safari: Safari }) {
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
+
+      {selectedSafari && safariViewMode === SafariViewMode.HOME && (
+        <CollapsibleController
+          className="absolute left-4 top-44 bottom-4 z-10 items-start"
+          OpenIcon={Info}
+          direction="LEFT"
+        >
+          <SafariDetails
+            safari={selectedSafari}
+            polygons={safariPolygons}
+            spots={safariSpots}
+          />
+        </CollapsibleController>
+      )}
 
       {currentPoint && safariViewMode === SafariViewMode.ROUTE && (
         <SafariCreateForm />

@@ -57,6 +57,7 @@ export enum SafariViewMode {
   ROUTE = "ROUTE",
   SEARCH = "SEARCH",
   POLYGON = "POLYGON",
+  HOME = "HOME",
 }
 
 export enum SafariPageMode {
@@ -147,7 +148,7 @@ export default function Page() {
   const [pageMode, setPageMode] = useState<SafariPageMode>(SafariPageMode.VIEW);
 
   // When in details mode
-  const [safariViewMode, setSafariViewMode] = useState(SafariViewMode.ROUTE);
+  const [safariViewMode, setSafariViewMode] = useState(SafariViewMode.HOME);
 
   const [selectedSafari, setSelectedSafari] = useState<Safari | null>(null);
 
@@ -263,6 +264,7 @@ export default function Page() {
       if (selectedSafari) {
         removeElementsWithClass(SAFARI_SPOT);
         removeElementsWithClass(ROUTE_POLYLINE);
+        removeElementsWithClass(POLYGON);
 
         const spots = (
           await databases.listDocuments(

@@ -79,6 +79,7 @@ export default function CollapsibleController({
             animate={getVariants(direction).animate}
             exit={getVariants(direction).exit}
             transition={{ duration: 0.25 }}
+            className="flex flex-col grow"
           >
             {children}
           </motion.div>
