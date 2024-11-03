@@ -66,6 +66,13 @@ export type SafariSpot = Models.Document & {
   order: number;
 };
 
+export type SafariPolygon = Models.Document & {
+  title: string;
+  description?: string;
+  points: string[];
+  altitude: number;
+};
+
 export type LucideIcon = React.ForwardRefExoticComponent<
   Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
 >;

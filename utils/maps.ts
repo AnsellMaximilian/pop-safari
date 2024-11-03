@@ -1,7 +1,11 @@
 export function removeElementsWithClass(className: string) {
-  const elements = document.querySelectorAll(`.${className}`);
+  const elements = document.getElementsByClassName(`${className}`);
 
-  console.log({ elements });
+  Array.from(elements).forEach((e) => e.remove());
+}
+
+export function removeElementsWithSelector(selector: string) {
+  const elements = document.querySelectorAll(`${selector}`);
 
   elements.forEach((e) => e.remove());
 }

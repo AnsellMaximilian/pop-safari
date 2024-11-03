@@ -20,10 +20,11 @@ import emptySafari from "@/assets/empty-safari.svg";
 import { useData } from "@/contexts/data/DataContext";
 import SafariList from "./SafariList";
 import CreateSafari from "./CreateSafari";
-import { Safari, SafariSpot } from "@/type";
+import { Safari, SafariPolygon, SafariSpot } from "@/type";
 import SafariView from "./SafariView";
 import {
   computeRoute,
+  createPolygon,
   getBaseRouteRequest,
   getPlaceDetails,
   initAutocomplete,
@@ -32,12 +33,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { LatLng, Map3dEvent, PlaceData } from "@/type/maps";
 import {
+  POLYGON,
+  POLYGON_POINT,
   polylineOptions,
   ROUTE_MARKER,
   ROUTE_POLYLINE,
   SAFARI_SPOT,
 } from "@/const/maps";
-import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
+import {
+  MarkerUtils,
+  removeElementsWithClass,
+  removeElementsWithSelector,
+} from "@/utils/maps";
 import { config, databases } from "@/lib/appwrite";
 import { Query } from "appwrite";
 import { excludeStartAndEnd } from "@/utils/common";
@@ -83,6 +90,19 @@ export interface SafariPageContextData {
 
   safariSpots: SafariSpot[];
   setSafariSpots: SetState<SafariSpot[]>;
+
+  // polygons
+  polygonPoints: LatLng[];
+  setPolygonPoints: SetState<LatLng[]>;
+
+  currentPolygonPoints: LatLng[];
+  setCurrentPolygonPoints: SetState<LatLng[]>;
+
+  currentPolygonId: string | null;
+  setCurrentPolygonId: SetState<string | null>;
+
+  safariPolygons: SafariPolygon[];
+  setSafariPolygons: SetState<SafariPolygon[]>;
 }
 
 export const SafariPageContext = createContext<SafariPageContextData>({
@@ -107,6 +127,18 @@ export const SafariPageContext = createContext<SafariPageContextData>({
 
   safariSpots: [],
   setSafariSpots: () => {},
+
+  polygonPoints: [],
+  setPolygonPoints: () => {},
+
+  currentPolygonPoints: [],
+  setCurrentPolygonPoints: () => {},
+
+  currentPolygonId: null,
+  setCurrentPolygonId: () => {},
+
+  safariPolygons: [],
+  setSafariPolygons: () => {},
 });
 
 export default function Page() {
@@ -132,8 +164,17 @@ export default function Page() {
   );
 
   const [safariSpots, setSafariSpots] = useState<SafariSpot[]>([]);
-
   const [currentPoint, setCurrentPoint] = useState<LatLng | null>(null);
+
+  // polygons
+  const [polygonPoints, setPolygonPoints] = useState<LatLng[]>([]);
+  const [currentPolygonPoints, setCurrentPolygonPoints] = useState<LatLng[]>(
+    []
+  );
+
+  const [currentPolygonId, setCurrentPolygonId] = useState<string | null>(null);
+
+  const [safariPolygons, setSafariPolygons] = useState<SafariPolygon[]>([]);
 
   useEffect(() => {
     let autocompleteListener: google.maps.MapsEventListener | null = null;
@@ -151,6 +192,9 @@ export default function Page() {
   }, [map]);
 
   useEffect(() => {
+    if (safariViewMode !== SafariViewMode.ROUTE)
+      removeElementsWithClass(ROUTE_MARKER);
+
     const handleMapClick: EventListenerOrEventListenerObject = (basicE) => {
       loader.load().then(async () => {
         // @ts-ignore
@@ -163,42 +207,46 @@ export default function Page() {
           longitude: e.position.lng,
         };
 
-        setCurrentPoint(latLng);
-        if (e.placeId) {
-          console.log(e.placeId);
-          const placeDetails = await getPlaceDetails(e.placeId);
+        if (safariViewMode === SafariViewMode.ROUTE) {
+          setCurrentPoint(latLng);
+          if (e.placeId) {
+            console.log(e.placeId);
+            const placeDetails = await getPlaceDetails(e.placeId);
 
-          setPlace(placeDetails);
-        } else {
-          setPlace(null);
-          setExtraSpotData((prev) => ({ ...prev, placeId: undefined }));
+            setPlace(placeDetails);
+          } else {
+            setPlace(null);
+            setExtraSpotData((prev) => ({ ...prev, placeId: undefined }));
+          }
+
+          removeElementsWithClass(ROUTE_MARKER);
+
+          const markerWithCustomSvg = await MarkerUtils.createImageMarker(
+            latLng.latitude,
+            latLng.longitude,
+            "/pop-safari-marker.svg",
+            ROUTE_MARKER
+          );
+
+          map?.append(markerWithCustomSvg);
+        } else if (safariViewMode === SafariViewMode.POLYGON) {
+          removeElementsWithClass(POLYGON_POINT);
+          setPolygonPoints((prev) => {
+            const newVal = [...prev, latLng];
+            newVal.forEach(async (p) => {
+              const markerWithCustomSvg = await MarkerUtils.createImageMarker(
+                p.latitude,
+                p.longitude,
+                "/polygon-point.svg",
+                POLYGON_POINT
+              );
+
+              map?.append(markerWithCustomSvg);
+            });
+
+            return newVal;
+          });
         }
-
-        removeElementsWithClass(ROUTE_MARKER);
-
-        const markerWithCustomSvg = await MarkerUtils.createImageMarker(
-          latLng.latitude,
-          latLng.longitude,
-          "/pop-safari-marker.svg",
-          ROUTE_MARKER
-        );
-
-        map?.append(markerWithCustomSvg);
-
-        // const marker = new Marker3DElement({
-        //   position: { lat: e.position.lat, lng: e.position.lng },
-        //   label: "Clicked",
-        //   icon: {
-        //     url: "/default-business.svg", // Image path (should be accessible in the public directory or via URL)
-        //     scaledSize: { width: 50, height: 50 }, // Optional: Adjust the image size
-        //   },
-        // });
-
-        // if (map) {
-        //   removeElementsWithClass(GENERAL_MARKER_ONE);
-        //   marker.classList.add(GENERAL_MARKER_ONE);
-        //   map.append(marker);
-        // }
       });
     };
     if (map) {
@@ -208,7 +256,7 @@ export default function Page() {
     return () => {
       map?.removeEventListener("gmp-click", handleMapClick);
     };
-  }, [map]);
+  }, [map, safariViewMode]);
 
   useEffect(() => {
     (async () => {
@@ -227,6 +275,15 @@ export default function Page() {
           )
         ).documents as SafariSpot[];
         setSafariSpots(spots);
+
+        const polygons = (
+          await databases.listDocuments(
+            config.dbId,
+            config.polygonCollectionId,
+            [Query.equal("safariId", selectedSafari.$id)]
+          )
+        ).documents as SafariPolygon[];
+        setSafariPolygons(polygons);
       }
     })();
   }, [selectedSafari]);
@@ -291,6 +348,23 @@ export default function Page() {
       }
     })();
   }, [safariSpots, map]);
+
+  useEffect(() => {
+    (async () => {
+      if (map) {
+        removeElementsWithSelector(`.${POLYGON}`);
+        safariPolygons.forEach((p) => {
+          let points: LatLng[] = [];
+
+          try {
+            points = p.points.map((ps) => JSON.parse(ps)) as LatLng[];
+          } catch (error) {}
+
+          createPolygon(map, points, p.altitude, p.$id);
+        });
+      }
+    })();
+  }, [safariPolygons, map]);
   return (
     <SafariPageContext.Provider
       value={{
@@ -312,6 +386,14 @@ export default function Page() {
         setCurrentPoint,
         safariSpots,
         setSafariSpots,
+        polygonPoints,
+        setPolygonPoints,
+        currentPolygonId,
+        setCurrentPolygonId,
+        currentPolygonPoints,
+        setCurrentPolygonPoints,
+        safariPolygons,
+        setSafariPolygons,
       }}
     >
       <Map3D mapRef={mapRef} setMap={setMap} className="fixed inset-0">

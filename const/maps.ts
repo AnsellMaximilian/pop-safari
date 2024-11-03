@@ -1,10 +1,11 @@
 export const polygonOptions: google.maps.maps3d.Polygon3DElementOptions = {
-  strokeColor: "#EA4335",
+  strokeColor: "#F97316",
   strokeWidth: 4,
   //   strokeOpacity: 0.8,
-  fillColor: "blue",
+  fillColor: "rgba(249, 115, 22,.1)",
   //   fillOpacity: 0.2,
-  altitudeMode: "ABSOLUTE" as google.maps.maps3d.AltitudeMode.ABSOLUTE,
+  altitudeMode:
+    "RELATIVE_TO_GROUND" as google.maps.maps3d.AltitudeMode.RELATIVE_TO_GROUND,
   extruded: true,
   drawsOccludedSegments: true,
 };
@@ -33,6 +34,8 @@ export const SAFARI_SPOT = "SAFARI_SPOT";
 
 // polygons
 export const BUSINESS_REGIS_POLYGON = "BUSINESS_REGIS_POLYGON";
+export const POLYGON_POINT = "POLYGON_POINT";
+export const POLYGON = "POLYGON";
 
 // polyline
 export const ROUTE_POLYLINE = "ROUTE_POLYLINE";

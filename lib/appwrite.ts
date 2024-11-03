@@ -14,6 +14,7 @@ export const config = {
   safariStopCollectionId: String(
     process.env.NEXT_PUBLIC_SAFARI_STOP_COLLECTION_ID
   ),
+  polygonCollectionId: String(process.env.NEXT_PUBLIC_POLYGON_COLLECTION_ID),
 };
 
 export const client = new Client();

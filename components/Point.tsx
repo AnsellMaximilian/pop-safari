@@ -31,7 +31,10 @@ interface GroundProps extends HTMLAttributes<HTMLDivElement> {
 
 export function GroundPoint({ point, ...props }: GroundProps) {
   return (
-    <div {...props} className={cn("flex gap-1 text-xs", props.className)}>
+    <div
+      {...props}
+      className={cn("grid grid-cols-2 gap-1 text-xs", props.className)}
+    >
       <div className="flex gap-2 border-border p-2 rounded-md border shadow-sm items-center bg-white">
         <TbWorldLatitude /> <span>{point.latitude}</span>
       </div>

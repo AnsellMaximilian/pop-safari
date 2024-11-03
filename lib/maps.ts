@@ -1,8 +1,18 @@
-import { NEARBY_MARKER, SEARCH_PLACE_MARKER } from "@/const/maps";
+import {
+  NEARBY_MARKER,
+  POLYGON,
+  POLYGON_POINT,
+  polygonOptions,
+  SEARCH_PLACE_MARKER,
+} from "@/const/maps";
 import { LatLng, PlaceData, RouteRequest, RouteResponse } from "@/type/maps";
-import { removeElementsWithClass } from "@/utils/maps";
+import {
+  removeElementsWithClass,
+  removeElementsWithSelector,
+} from "@/utils/maps";
 import { Loader } from "@googlemaps/js-api-loader";
 import axios from "axios";
+import { v4 } from "uuid";
 
 export const loader = new Loader({
   apiKey: String(process.env.NEXT_PUBLIC_MAPS_API_KEY),
@@ -277,3 +287,25 @@ export async function getPlaceDetails(
     return null;
   }
 }
+
+export function createPolygon(
+  map: google.maps.maps3d.Map3DElement,
+  points: LatLng[],
+  altitude: number = 300,
+  id: string
+) {
+  const polygon = new google.maps.maps3d.Polygon3DElement(polygonOptions);
+  polygon.outerCoordinates = points.map((p) => ({
+    lat: p.latitude,
+    lng: p.longitude,
+    altitude: altitude,
+  }));
+  polygon.classList.add(POLYGON);
+  polygon.classList.add(id);
+  polygon.id = id;
+  map.append(polygon);
+}
+
+export const generateValidId = () => {
+  return "VALID_" + v4();
+};

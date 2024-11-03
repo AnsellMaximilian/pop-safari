@@ -7,7 +7,7 @@ import { ChevronLeftIcon } from "@radix-ui/react-icons";
 import React, { useContext, useState } from "react";
 import { SafariPageContext, SafariPageMode, SafariViewMode } from "./page";
 import SafariStatusBadge from "./SafariStatusBadge";
-import { MapPin, Search, Box, MapPinHouse } from "lucide-react";
+import { MapPin, Search, Box, MapPinHouse, BoxIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useForm } from "react-hook-form";
@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import SafariCreateForm from "./SafariCreateForm";
 import CollapsibleController from "@/components/CollapsibleController";
+import PolygonControls from "./PolygonControls";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -102,7 +103,19 @@ export default function SafariView({ safari }: { safari: Safari }) {
         </ToggleGroup>
       </div>
 
-      {currentPoint && <SafariCreateForm />}
+      {currentPoint && safariViewMode === SafariViewMode.ROUTE && (
+        <SafariCreateForm />
+      )}
+
+      {safariViewMode === SafariViewMode.POLYGON && (
+        <CollapsibleController
+          className="absolute left-4 top-44 bottom-4 z-10 items-start"
+          OpenIcon={BoxIcon}
+          direction="LEFT"
+        >
+          <PolygonControls />
+        </CollapsibleController>
+      )}
 
       {place && (
         <CollapsibleController
