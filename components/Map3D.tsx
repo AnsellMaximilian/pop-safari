@@ -8,8 +8,9 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
     React.SetStateAction<google.maps.maps3d.Map3DElement | null>
   >;
   mapRef: React.RefObject<HTMLDivElement>;
+  options?: google.maps.maps3d.Map3DElementOptions;
 }
-export default function Map3D({ mapRef, setMap, ...props }: Props) {
+export default function Map3D({ mapRef, setMap, options, ...props }: Props) {
   useEffect(() => {
     let map: google.maps.maps3d.Map3DElement;
     if (mapRef.current != null) {
@@ -17,16 +18,20 @@ export default function Map3D({ mapRef, setMap, ...props }: Props) {
         const { Map3DElement } = (await google.maps.importLibrary(
           "maps3d"
         )) as google.maps.Maps3DLibrary;
-        map = new Map3DElement({
-          center: {
-            lat: 40.6904220416242,
-            lng: -74.0464663795214,
-            altitude: 5.817827242160252,
-          },
-          tilt: 75.08332032319454,
-          range: 334.6798065248004,
-          heading: -44.04146077322564,
-        });
+        map = new Map3DElement(
+          options
+            ? options
+            : {
+                center: {
+                  lat: 40.6904220416242,
+                  lng: -74.0464663795214,
+                  altitude: 5.817827242160252,
+                },
+                tilt: 75.08332032319454,
+                range: 334.6798065248004,
+                heading: -44.04146077322564,
+              }
+        );
 
         if (map) {
           if (setMap) setMap(map);
