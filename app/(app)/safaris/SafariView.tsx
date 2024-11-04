@@ -20,14 +20,6 @@ import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useForm } from "react-hook-form";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import Image from "next/image";
-import { useUser } from "@/contexts/user/UserContext";
-import { useToast } from "@/hooks/use-toast";
-import { config, databases } from "@/lib/appwrite";
-import { ID, Permission, Role } from "appwrite";
 import PlaceDisplay from "@/components/PlaceDisplay";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -36,6 +28,7 @@ import CollapsibleController from "@/components/CollapsibleController";
 import PolygonControls from "./PolygonControls";
 import SafariDetails from "./SafariDetails";
 import { truncateString } from "@/utils/common";
+import { X } from "lucide-react";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -155,8 +148,18 @@ export default function SafariView({ safari }: { safari: Safari }) {
           key={place.id}
           className="absolute right-4 top-44 bottom-4 z-10"
           OpenIcon={MapPinHouse}
-          contents={() => (
+          contents={(setOpen) => (
             <div className="rounded-md shadow-md bg-white p-4 max-w-[500px] grow">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="font-semibold">Found Place</h2>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setOpen(false)}
+                >
+                  <X />
+                </Button>
+              </div>
               <PlaceDisplay place={place} />
               <div className="mt-4">
                 <div className="flex items-center space-x-2">
