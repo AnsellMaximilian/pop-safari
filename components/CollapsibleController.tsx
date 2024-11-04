@@ -1,6 +1,11 @@
 "use client";
 
-import React, { HTMLAttributes, ReactNode, useState } from "react";
+import React, {
+  createContext,
+  HTMLAttributes,
+  ReactNode,
+  useState,
+} from "react";
 import { Button } from "./ui/button";
 import { Eye, EyeClosed, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,7 +14,9 @@ import { motion, AnimatePresence } from "framer-motion";
 type SlideDirection = "LEFT" | "RIGHT" | "TOP" | "BOTTOM";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
+  contents: (
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>
+  ) => ReactNode;
   OpenIcon?: LucideIcon;
   direction?: SlideDirection;
 }
@@ -49,42 +56,54 @@ const getVariants = (direction: SlideDirection) => {
   }
 };
 
+export interface CollapsibleContextData {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const CollapsibleContext = createContext<CollapsibleContextData>({
+  setOpen: () => {},
+});
+
 export default function CollapsibleController({
-  children,
+  contents,
   OpenIcon,
   direction = "RIGHT",
   ...props
 }: Props) {
   const [isOpen, setIsOpen] = useState(true);
   return (
-    <div
-      {...props}
-      className={cn("flex flex-col gap-2 items-end", props.className)}
-    >
-      <Button
-        variant={"outline"}
-        size="icon"
-        onClick={() => {
-          setIsOpen((prev) => !prev);
-        }}
-        className={cn(isOpen ? "" : "opacity-70")}
+    <CollapsibleContext.Provider value={{ setOpen: setIsOpen }}>
+      <div
+        {...props}
+        className={cn("flex flex-col gap-2 items-end", props.className)}
       >
-        {OpenIcon ? <OpenIcon /> : <Eye />}
-      </Button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={getVariants(direction).initial}
-            animate={getVariants(direction).animate}
-            exit={getVariants(direction).exit}
-            transition={{ duration: 0.25 }}
-            className="flex flex-col grow"
+        {!isOpen && (
+          <Button
+            variant={"outline"}
+            size="icon"
+            onClick={() => {
+              setIsOpen((prev) => !prev);
+            }}
+            className={cn(isOpen ? "" : "opacity-70")}
           >
-            {children}
-          </motion.div>
+            {OpenIcon ? <OpenIcon /> : <Eye />}
+          </Button>
         )}
-      </AnimatePresence>
-    </div>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={getVariants(direction).initial}
+              animate={getVariants(direction).animate}
+              exit={getVariants(direction).exit}
+              transition={{ duration: 0.25 }}
+              className="flex flex-col grow overflow-y-hidden"
+            >
+              {contents(setIsOpen)}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </CollapsibleContext.Provider>
   );
 }

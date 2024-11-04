@@ -19,6 +19,8 @@ import { config, databases } from "@/lib/appwrite";
 import { ID, Permission, Role } from "appwrite";
 import { SafariPolygon } from "@/type";
 import { useUser } from "@/contexts/user/UserContext";
+import { CollapsibleContext } from "@/components/CollapsibleController";
+import { X } from "lucide-react";
 
 export default function PolygonControls() {
   const {
@@ -34,6 +36,7 @@ export default function PolygonControls() {
   } = useContext(SafariPageContext);
   const { currentUser } = useUser();
   const { map } = useContext(SafariPageContext);
+  const { setOpen } = useContext(CollapsibleContext);
   const { toast } = useToast();
 
   const [altitude, setAltitude] = useState(25);
@@ -78,10 +81,15 @@ export default function PolygonControls() {
   return (
     <div className="rounded-md shadow-md bg-white p-4 w-[500px] grow overflow-auto">
       <div className="flex justify-between items-center">
-        <h2 className="font-semibold">Polygon Controls</h2>
-        <Badge variant="outline">
-          {isCurrentMode ? "Edit Mode" : "Create Mode"}
-        </Badge>
+        <div className="flex gap-2 items-center">
+          <h2 className="font-semibold">Polygon Controls</h2>
+          <Badge variant="outline">
+            {isCurrentMode ? "Edit Mode" : "Create Mode"}
+          </Badge>
+        </div>
+        <Button variant="outline" size="icon" onClick={() => setOpen(false)}>
+          <X />
+        </Button>
       </div>
       {polygonPoints.length > 0 && !isCurrentMode && (
         <div className="flex flex-col gap-2 mt-4">

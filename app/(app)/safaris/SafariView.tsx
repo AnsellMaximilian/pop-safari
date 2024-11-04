@@ -35,6 +35,7 @@ import SafariCreateForm from "./SafariCreateForm";
 import CollapsibleController from "@/components/CollapsibleController";
 import PolygonControls from "./PolygonControls";
 import SafariDetails from "./SafariDetails";
+import { truncateString } from "@/utils/common";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -55,7 +56,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
 
   return (
     <>
-      <div className="absolute top-4 left-4 z-10 bg-white rounded-md shadow-md p-4">
+      <div className="absolute top-4 left-4 z-10 bg-white rounded-md shadow-md p-4 w-[300px]">
         <div className="flex gap-4 items-center">
           <Button
             variant="outline"
@@ -70,7 +71,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
           <div>
             <h2 className="font-bold text-xs">Safari Mode</h2>
             <div className="flex gap-2">
-              <h1>{safari.title}</h1>
+              <h1>{truncateString(safari.title, 15)}</h1>
               <SafariStatusBadge safari={safari} />
             </div>
           </div>
@@ -123,16 +124,17 @@ export default function SafariView({ safari }: { safari: Safari }) {
 
       {selectedSafari && safariViewMode === SafariViewMode.HOME && (
         <CollapsibleController
-          className="absolute left-4 top-44 bottom-4 z-10 items-start"
+          className="absolute left-4 top-44 bottom-4 z-10 items-start overflow-y-hidden"
           OpenIcon={Info}
           direction="LEFT"
-        >
-          <SafariDetails
-            safari={selectedSafari}
-            polygons={safariPolygons}
-            spots={safariSpots}
-          />
-        </CollapsibleController>
+          contents={() => (
+            <SafariDetails
+              safari={selectedSafari}
+              polygons={safariPolygons}
+              spots={safariSpots}
+            />
+          )}
+        ></CollapsibleController>
       )}
 
       {currentPoint && safariViewMode === SafariViewMode.ROUTE && (
@@ -144,9 +146,8 @@ export default function SafariView({ safari }: { safari: Safari }) {
           className="absolute left-4 top-44 bottom-4 z-10 items-start"
           OpenIcon={BoxIcon}
           direction="LEFT"
-        >
-          <PolygonControls />
-        </CollapsibleController>
+          contents={() => <PolygonControls />}
+        />
       )}
 
       {place && (
@@ -154,26 +155,27 @@ export default function SafariView({ safari }: { safari: Safari }) {
           key={place.id}
           className="absolute right-4 top-44 bottom-4 z-10"
           OpenIcon={MapPinHouse}
-        >
-          <div className="rounded-md shadow-md bg-white p-4 max-w-[500px] grow">
-            <PlaceDisplay place={place} />
-            <div className="mt-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="associate-place"
-                  checked={!!extraSpotData?.placeId}
-                  onCheckedChange={(val) => {
-                    setExtraSpotData((prev) => ({
-                      ...prev,
-                      placeId: val ? place.id : undefined,
-                    }));
-                  }}
-                />
-                <Label htmlFor="associate-place">Connect to Activity</Label>
+          contents={() => (
+            <div className="rounded-md shadow-md bg-white p-4 max-w-[500px] grow">
+              <PlaceDisplay place={place} />
+              <div className="mt-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="associate-place"
+                    checked={!!extraSpotData?.placeId}
+                    onCheckedChange={(val) => {
+                      setExtraSpotData((prev) => ({
+                        ...prev,
+                        placeId: val ? place.id : undefined,
+                      }));
+                    }}
+                  />
+                  <Label htmlFor="associate-place">Connect to Activity</Label>
+                </div>
               </div>
             </div>
-          </div>
-        </CollapsibleController>
+          )}
+        />
       )}
 
       {/* <div className="absolute top-44 left-4 bg-white rounded-md shadow-md z-10 p-4">

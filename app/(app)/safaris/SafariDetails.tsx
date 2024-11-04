@@ -4,6 +4,10 @@ import { Safari, SafariPolygon, SafariSpot } from "@/type";
 import React, { useContext } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SafariPageContext } from "./page";
+import { Button } from "@/components/ui/button";
+import { GroundPoint } from "@/components/Point";
+import { X } from "lucide-react";
+import { CollapsibleContext } from "@/components/CollapsibleController";
 
 export default function SafariDetails({
   safari,
@@ -15,10 +19,17 @@ export default function SafariDetails({
   polygons: SafariPolygon[];
 }) {
   const { setPageMode } = useContext(SafariPageContext);
+  const { setOpen } = useContext(CollapsibleContext);
+
   return (
-    <div className="bg-white p-4 rounded-md shadow-md w-[500px] grow overflow-y-auto">
-      <h2 className="font-semibold">Safari Details</h2>
-      <Tabs defaultValue="general" className="w-full mt-4">
+    <div className="bg-white p-4 rounded-md shadow-md w-[500px] grow flex flex-col overflow-y-auto">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold">Safari Details</h2>
+        <Button variant="outline" size="icon" onClick={() => setOpen(false)}>
+          <X />
+        </Button>
+      </div>
+      <Tabs defaultValue="general" className="w-full mt-4 grow flex flex-col">
         <TabsList className="w-full">
           <TabsTrigger className="grow" value="general">
             General
@@ -30,7 +41,7 @@ export default function SafariDetails({
             Polygons
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="general" className="space-y-4">
+        <TabsContent value="general" className="space-y-4 grow ">
           <div className="text-[0.8rem] text-muted-foreground text-center">
             This section shows general details for the Safari you&apos;re
             currently viewing.
@@ -39,17 +50,31 @@ export default function SafariDetails({
             {safari.description ? safari.description : "No description."}
           </div>
         </TabsContent>
-        <TabsContent value="spots" className="space-y-4">
+        <TabsContent value="spots" className="space-y-4 grow ">
           <div className="text-[0.8rem] text-muted-foreground text-center">
-            This section shows general details for the Safari you&apos;re
-            currently viewing.
+            The spots you&apos;ve picked out for your Safari.
           </div>
-          <div>Current Spots: {spots.length}</div>
+          {spots.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {spots.map((s) => (
+                <div
+                  key={s.$id}
+                  className="p-4 text-sm border border-border rounded-md space-y-2"
+                >
+                  <div>{s.name}</div>
+                  <GroundPoint point={{ latitude: s.lat, longitude: s.lng }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="">
+              <Button>Create Spots</Button>
+            </div>
+          )}
         </TabsContent>
-        <TabsContent value="polygons" className="space-y-4">
+        <TabsContent value="polygons" className="space-y-4 grow ">
           <div className="text-[0.8rem] text-muted-foreground text-center">
-            This section shows general details for the Safari you&apos;re
-            currently viewing.
+            Polygons for places, buildings, etc. that you&apos;ve highlighted.
           </div>
           <div>Current Polygons: {polygons.length}</div>
         </TabsContent>
