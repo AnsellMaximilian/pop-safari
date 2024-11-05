@@ -86,7 +86,9 @@ export default function SafariCreateForm() {
           lng: currentPoint.longitude,
           order:
             safariSpots.length > 0
-              ? safariSpots[safariSpots.length - 1].order + 1
+              ? safariSpots.sort((a, b) => a.order - b.order)[
+                  safariSpots.length - 1
+                ].order + 1
               : 1,
         },
         [
