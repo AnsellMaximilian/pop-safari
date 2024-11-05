@@ -84,7 +84,10 @@ export default function SafariCreateForm() {
           placeId: extraSpotData?.placeId ? extraSpotData.placeId : null,
           lat: currentPoint.latitude,
           lng: currentPoint.longitude,
-          order: safariSpots[safariSpots.length - 1].order + 1,
+          order:
+            safariSpots.length > 0
+              ? safariSpots[safariSpots.length - 1].order + 1
+              : 1,
         },
         [
           Permission.update(Role.user(currentUser.$id)),
