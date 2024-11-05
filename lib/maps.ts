@@ -334,3 +334,18 @@ export async function getElevation(coord: LatLng) {
   console.log({ elevation });
   return elevation;
 }
+
+export function findCenter(coordinates: LatLng[]): LatLng {
+  let totalLat = 0;
+  let totalLng = 0;
+
+  coordinates.forEach((coord) => {
+    totalLat += coord.latitude;
+    totalLng += coord.longitude;
+  });
+
+  const centerLat = totalLat / coordinates.length;
+  const centerLng = totalLng / coordinates.length;
+
+  return { latitude: centerLat, longitude: centerLng };
+}

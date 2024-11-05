@@ -3,7 +3,7 @@
 import { Safari, SafariPolygon, SafariSpot } from "@/type";
 import React, { useContext, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SafariPageContext } from "./page";
+import { SafariPageContext, SafariPageMode, SafariViewMode } from "./page";
 import { Button } from "@/components/ui/button";
 import { GroundPoint } from "@/components/Point";
 import { Eye, Trash, X } from "lucide-react";
@@ -12,6 +12,7 @@ import { FlyCameraOptions } from "@/type/maps";
 import { getElevation, getElevationforPoint } from "@/lib/maps";
 import { config, databases } from "@/lib/appwrite";
 import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
 
 export default function SafariDetails({
   safari,
@@ -22,8 +23,13 @@ export default function SafariDetails({
   spots: SafariSpot[];
   polygons: SafariPolygon[];
 }) {
-  const { setPageMode, map, setSafariPolygons, setSafariSpots } =
-    useContext(SafariPageContext);
+  const {
+    setPageMode,
+    map,
+    setSafariPolygons,
+    setSafariSpots,
+    setSafariViewMode,
+  } = useContext(SafariPageContext);
   const { setOpen } = useContext(CollapsibleContext);
   const { toast } = useToast();
 
@@ -60,8 +66,21 @@ export default function SafariDetails({
         </TabsContent>
         <TabsContent value="spots" className="space-y-4 grow ">
           <div className="text-[0.8rem] text-muted-foreground text-center">
-            The spots you&apos;ve picked out for your Safari.
+            The spots you&apos;ve picked out for your Safari. Switch to{" "}
+            <span
+              className="text-primary hover:text-primary/70 cursor-pointer"
+              onClick={() => {
+                setSafariViewMode(SafariViewMode.ROUTE);
+                toast({
+                  description: "Click anywhere to map your Safari Spot",
+                });
+              }}
+            >
+              "Spot Mode"
+            </span>{" "}
+            to create Safari Spots.
           </div>
+
           {spots.length > 0 ? (
             <div className="flex flex-col gap-2">
               {spots.map((s) => (
@@ -138,8 +157,24 @@ export default function SafariDetails({
               ))}
             </div>
           ) : (
-            <div className="">
-              <Button>Create Spots</Button>
+            <div className="flex items-center justify-center flex-col gap-4">
+              <Image
+                src="/spot-marker.svg"
+                width={200}
+                height={200}
+                alt="Empty Spots"
+                className="w-56"
+              />
+              <Button
+                onClick={() => {
+                  setSafariViewMode(SafariViewMode.ROUTE);
+                  toast({
+                    description: "Click anywhere to map your Safari Spot",
+                  });
+                }}
+              >
+                Create Spots
+              </Button>
             </div>
           )}
         </TabsContent>
