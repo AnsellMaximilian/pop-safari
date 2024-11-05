@@ -1,7 +1,7 @@
 "use client";
 
 import { Safari, SafariPolygon, SafariSpot } from "@/type";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SafariPageContext } from "./page";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { Eye, Trash, X } from "lucide-react";
 import { CollapsibleContext } from "@/components/CollapsibleController";
 import { FlyCameraOptions } from "@/type/maps";
 import { getElevation, getElevationforPoint } from "@/lib/maps";
+import { config, databases } from "@/lib/appwrite";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SafariDetails({
   safari,
@@ -20,8 +22,12 @@ export default function SafariDetails({
   spots: SafariSpot[];
   polygons: SafariPolygon[];
 }) {
-  const { setPageMode, map } = useContext(SafariPageContext);
+  const { setPageMode, map, setSafariPolygons, setSafariSpots } =
+    useContext(SafariPageContext);
   const { setOpen } = useContext(CollapsibleContext);
+  const { toast } = useToast();
+
+  const [isDeleting, setisDeleting] = useState(false);
 
   return (
     <div className="bg-white p-4 rounded-md shadow-md w-[500px] grow flex flex-col overflow-y-auto">
@@ -67,6 +73,7 @@ export default function SafariDetails({
                     <div>{s.name}</div>
                     <div className="flex gap-2 items-center">
                       <Button
+                        disabled={isDeleting}
                         variant="outline"
                         size="icon"
                         onClick={async () => {
@@ -93,7 +100,35 @@ export default function SafariDetails({
                       >
                         <Eye />
                       </Button>
-                      <Button variant="destructive" size="icon">
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setisDeleting(true);
+                            await databases.deleteDocument(
+                              config.dbId,
+                              config.safariStopCollectionId,
+                              s.$id
+                            );
+                            setSafariSpots((prev) =>
+                              prev.filter((cs) => cs.$id != s.$id)
+                            );
+                          } catch (error) {
+                            toast({
+                              variant: "destructive",
+                              title: "Error deleting spot",
+                              description:
+                                error instanceof Error
+                                  ? error.message
+                                  : "Something went wrong.",
+                            });
+                          } finally {
+                            setisDeleting(false);
+                          }
+                        }}
+                        disabled={isDeleting}
+                        variant="destructive"
+                        size="icon"
+                      >
                         <Trash />
                       </Button>
                     </div>
