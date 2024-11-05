@@ -84,7 +84,6 @@ export const zoomToViewport = async (
     coordinates: locationPoints,
   });
   map3DElement.append(locationPolyline);
-  console.log(locationPolyline);
   let elevation = await getElevationforPoint(geometry.location!, place);
   if (map3DElement) {
     map3DElement.center = {
@@ -185,8 +184,6 @@ export async function getNearbyPlaces(
   removeElementsWithClass(NEARBY_MARKER);
 
   if (places.length && map) {
-    console.log(places);
-
     const { LatLngBounds } = (await google.maps.importLibrary(
       "core"
     )) as google.maps.CoreLibrary;
@@ -225,8 +222,6 @@ export async function computeRoute(
         },
       }
     );
-    console.log("SAAGGGG");
-    console.log({ swag: response.data });
     return response.data;
   } catch (error) {
     console.error("Error computing route:", error);
@@ -333,7 +328,6 @@ export async function getElevation(coord: LatLng) {
   }
   const elevation = elevationResponse.results[0].elevation || 10;
 
-  console.log({ elevation });
   return elevation;
 }
 
@@ -352,10 +346,10 @@ export function findCenter(coordinates: LatLng[]): LatLng {
   return { latitude: centerLat, longitude: centerLng };
 }
 
-function flyAlongRoute(
+export function flyAlongRoute(
   map: google.maps.maps3d.Map3DElement,
-  steps: RouteStep[],
-  durationPerStep: number = 2000
+  steps: LatLng[],
+  durationPerStep: number = 500
 ) {
   let currentStep = 0;
 
@@ -382,13 +376,13 @@ function flyAlongRoute(
       map.center = {
         lat:
           startCenter.lat +
-          (targetCenter.lat - startCenter.lat) * easedProgress,
+          (targetCenter.latitude - startCenter.lat) * easedProgress,
         lng:
           startCenter.lng +
-          (targetCenter.lng - startCenter.lng) * easedProgress,
+          (targetCenter.longitude - startCenter.lng) * easedProgress,
         altitude:
           startCenter.altitude +
-          (targetCenter.altitude - startCenter.altitude) * easedProgress,
+          (startCenter.altitude - startCenter.altitude) * easedProgress,
       };
       map.tilt = startTilt + (targetTilt - startTilt) * easedProgress;
       map.heading =

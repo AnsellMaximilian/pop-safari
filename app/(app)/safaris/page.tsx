@@ -25,6 +25,7 @@ import SafariView from "./SafariView";
 import {
   computeRoute,
   createPolygon,
+  flyAlongRoute,
   getBaseRouteRequest,
   getPlaceDetails,
   initAutocomplete,
@@ -331,7 +332,16 @@ export default function Page() {
           const decodedPath = encoding.decodePath(
             res.routes[0].polyline.encodedPolyline
           );
-          console.log(decodedPath);
+
+          setTimeout(() => {
+            flyAlongRoute(
+              map,
+              decodedPath.map((p) => ({
+                latitude: p.lat(),
+                longitude: p.lng(),
+              }))
+            );
+          }, 5000);
 
           removeElementsWithClass(ROUTE_POLYLINE);
 
