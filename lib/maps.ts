@@ -11,6 +11,7 @@ import {
   PlaceData,
   RouteRequest,
   RouteResponse,
+  RouteStep,
 } from "@/type/maps";
 import {
   removeElementsWithClass,
@@ -224,7 +225,8 @@ export async function computeRoute(
         },
       }
     );
-
+    console.log("SAAGGGG");
+    console.log({ swag: response.data });
     return response.data;
   } catch (error) {
     console.error("Error computing route:", error);
@@ -348,4 +350,61 @@ export function findCenter(coordinates: LatLng[]): LatLng {
   const centerLng = totalLng / coordinates.length;
 
   return { latitude: centerLat, longitude: centerLng };
+}
+
+function flyAlongRoute(
+  map: google.maps.maps3d.Map3DElement,
+  steps: RouteStep[],
+  durationPerStep: number = 2000
+) {
+  let currentStep = 0;
+
+  function flyToNextStep() {
+    if (currentStep >= steps.length - 1) return;
+
+    const startCenter = map.center!;
+    const targetCenter = steps[currentStep];
+    const startTilt = map.tilt || 45;
+    const targetTilt = 45; // Example tilt
+    const startHeading = map.heading || 10;
+    const targetHeading = startHeading + 10; // Adjust heading slightly for effect
+    const startRange = map.range || 500;
+    const targetRange = 500; // Adjust range to zoom if needed
+
+    let startTime: number | null = null;
+
+    function animateStep(time: number) {
+      if (!startTime) startTime = time;
+      const progress = (time - startTime) / durationPerStep;
+      const easedProgress = Math.min(progress, 1);
+
+      // Interpolate each property
+      map.center = {
+        lat:
+          startCenter.lat +
+          (targetCenter.lat - startCenter.lat) * easedProgress,
+        lng:
+          startCenter.lng +
+          (targetCenter.lng - startCenter.lng) * easedProgress,
+        altitude:
+          startCenter.altitude +
+          (targetCenter.altitude - startCenter.altitude) * easedProgress,
+      };
+      map.tilt = startTilt + (targetTilt - startTilt) * easedProgress;
+      map.heading =
+        startHeading + (targetHeading - startHeading) * easedProgress;
+      map.range = startRange + (targetRange - startRange) * easedProgress;
+
+      if (progress < 1) {
+        requestAnimationFrame(animateStep);
+      } else {
+        currentStep++; // Move to the next step
+        flyToNextStep(); // Recursively call for the next point
+      }
+    }
+
+    requestAnimationFrame(animateStep);
+  }
+
+  flyToNextStep(); // Start the animation with the first step
 }
