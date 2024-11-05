@@ -5,7 +5,13 @@ import {
   polygonOptions,
   SEARCH_PLACE_MARKER,
 } from "@/const/maps";
-import { LatLng, PlaceData, RouteRequest, RouteResponse } from "@/type/maps";
+import {
+  FlyCameraOptions,
+  LatLng,
+  PlaceData,
+  RouteRequest,
+  RouteResponse,
+} from "@/type/maps";
 import {
   removeElementsWithClass,
   removeElementsWithSelector,
@@ -309,3 +315,22 @@ export function createPolygon(
 export const generateValidId = () => {
   return "VALID_" + v4();
 };
+
+export async function getElevation(coord: LatLng) {
+  const location = new google.maps.LatLng(coord.latitude, coord.longitude);
+  // @ts-ignore
+  const { ElevationService } = await google.maps.importLibrary("elevation");
+  // Get place elevation using the ElevationService.
+  const elevatorService = new google.maps.ElevationService();
+  const elevationResponse = await elevatorService.getElevationForLocations({
+    locations: [location],
+  });
+
+  if (!(elevationResponse.results && elevationResponse.results.length)) {
+    return 100;
+  }
+  const elevation = elevationResponse.results[0].elevation || 10;
+
+  console.log({ elevation });
+  return elevation;
+}

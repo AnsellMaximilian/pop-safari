@@ -6,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SafariPageContext } from "./page";
 import { Button } from "@/components/ui/button";
 import { GroundPoint } from "@/components/Point";
-import { X } from "lucide-react";
+import { Eye, Trash, X } from "lucide-react";
 import { CollapsibleContext } from "@/components/CollapsibleController";
+import { FlyCameraOptions } from "@/type/maps";
+import { getElevation, getElevationforPoint } from "@/lib/maps";
 
 export default function SafariDetails({
   safari,
@@ -18,7 +20,7 @@ export default function SafariDetails({
   spots: SafariSpot[];
   polygons: SafariPolygon[];
 }) {
-  const { setPageMode } = useContext(SafariPageContext);
+  const { setPageMode, map } = useContext(SafariPageContext);
   const { setOpen } = useContext(CollapsibleContext);
 
   return (
@@ -61,7 +63,41 @@ export default function SafariDetails({
                   key={s.$id}
                   className="p-4 text-sm border border-border rounded-md space-y-2"
                 >
-                  <div>{s.name}</div>
+                  <div className="gap-2 justify-between flex items-center">
+                    <div>{s.name}</div>
+                    <div className="flex gap-2 items-center">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={async () => {
+                          if (map) {
+                            const opts: FlyCameraOptions = {
+                              endCamera: {
+                                center: {
+                                  lat: s.lat,
+                                  lng: s.lng,
+                                  altitude: await getElevation({
+                                    latitude: s.lat,
+                                    longitude: s.lng,
+                                  }),
+                                },
+                                range: 1000,
+                                tilt: 67.5,
+                              },
+                              durationMillis: 1000,
+                            };
+                            // @ts-ignore
+                            map.flyCameraTo(opts);
+                          }
+                        }}
+                      >
+                        <Eye />
+                      </Button>
+                      <Button variant="destructive" size="icon">
+                        <Trash />
+                      </Button>
+                    </div>
+                  </div>
                   <GroundPoint point={{ latitude: s.lat, longitude: s.lng }} />
                 </div>
               ))}

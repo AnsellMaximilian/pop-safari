@@ -211,3 +211,12 @@ export interface RouteResponse {
     };
   }>;
 }
+
+export interface FlyCameraOptions {
+  endCamera: {
+    center: Coordinate;
+    tilt: number;
+    range: number;
+  };
+  durationMillis: number;
+}
