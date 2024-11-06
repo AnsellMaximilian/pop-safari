@@ -14,6 +14,8 @@ export type UserProfile = Models.Document & {
   preferredLng?: number;
   username: string;
   profileImageId?: string;
+  friendIds: string[];
+  name: string;
 };
 
 export type User = Models.User<Models.Preferences> & {

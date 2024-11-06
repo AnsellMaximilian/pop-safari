@@ -9,8 +9,15 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   >;
   mapRef: React.RefObject<HTMLDivElement>;
   options?: google.maps.maps3d.Map3DElementOptions;
+  disableLabels?: boolean;
 }
-export default function Map3D({ mapRef, setMap, options, ...props }: Props) {
+export default function Map3D({
+  mapRef,
+  setMap,
+  options,
+  disableLabels = false,
+  ...props
+}: Props) {
   useEffect(() => {
     let map: google.maps.maps3d.Map3DElement;
     if (mapRef.current != null) {
@@ -30,6 +37,7 @@ export default function Map3D({ mapRef, setMap, options, ...props }: Props) {
                 tilt: 75.08332032319454,
                 range: 334.6798065248004,
                 heading: -44.04146077322564,
+                defaultLabelsDisabled: disableLabels,
               }
         );
 

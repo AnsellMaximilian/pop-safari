@@ -183,7 +183,7 @@ function RegisterPage() {
         config.dbId,
         config.userProfileCollectionId,
         currentUser.$id,
-        { username, bio, profileImageId },
+        { username, bio, profileImageId, name: currentUser.name },
 
         [
           Permission.update(Role.user(currentUser.$id)),

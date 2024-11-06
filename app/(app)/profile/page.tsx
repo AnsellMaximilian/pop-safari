@@ -1,6 +1,7 @@
 "use client";
 
 import { getVariants } from "@/components/CollapsibleController";
+import logo from "@/assets/pop-safari-logo.svg";
 import Map3D from "@/components/Map3D";
 import { useUser } from "@/contexts/user/UserContext";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,9 @@ import React, {
 import defUser from "@/assets/default-user.svg";
 import Image from "next/image";
 import UserProfile from "./UserProfile";
+import UserFriends from "./UserFriends";
+import { NavItem } from "../layout";
+import UserMenu from "@/components/UserMenu";
 enum ProfileMenuType {
   PROFILE = "PROFILE",
   FRIENDS = "FRIENDS",
@@ -124,6 +128,7 @@ export default function ProfilePage() {
   return (
     <ProfilePageContext.Provider value={{ setSelectedMenu, selectedMenu }}>
       <Map3D
+        disableLabels={true}
         setMap={setMap}
         mapRef={mapRef}
         options={{
@@ -135,6 +140,7 @@ export default function ProfilePage() {
           tilt: 55.213468690585785,
           range: 331.5639259548698,
           heading: 0.5274332925695666,
+          defaultLabelsDisabled: true,
         }}
         className="inset-0 fixed"
       >
@@ -172,6 +178,40 @@ export default function ProfilePage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <AnimatePresence>
+          {selectedMenu === ProfileMenuType.FRIENDS && (
+            <motion.div
+              initial={getVariants().initial}
+              animate={getVariants().animate}
+              exit={getVariants().exit}
+              transition={{ duration: 0.25 }}
+              className="absolute z-10 left-4 top-[5rem] bottom-4 overflow-y-auto rounded-md bg-white p-4 shadow-md w-[500px] flex flex-col"
+            >
+              <UserFriends />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <header className="absolute right-4 top-4 z-10 bg-white p-4 rounded-md shadow-md">
+          <nav className="flex gap-8 items-center">
+            <Image
+              src={logo}
+              width={300}
+              height={200}
+              alt="logo"
+              className="w-24"
+            />
+            <ul className="flex items-center gap-4 text-sm">
+              <NavItem label="Dashboard" href="/safaris" />
+              <NavItem label="Photos" href="/safaris" />
+              <NavItem label="Profile" href="/profile" />
+            </ul>
+            <div className="ml-auto">
+              <UserMenu />
+            </div>
+          </nav>
+        </header>
       </Map3D>
     </ProfilePageContext.Provider>
   );
