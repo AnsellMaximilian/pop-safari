@@ -21,7 +21,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   direction?: SlideDirection;
 }
 
-const getVariants = (direction: SlideDirection) => {
+export const getVariants = (direction: SlideDirection = "LEFT") => {
   switch (direction) {
     case "LEFT":
       return {
