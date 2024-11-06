@@ -333,15 +333,15 @@ export default function Page() {
             res.routes[0].polyline.encodedPolyline
           );
 
-          setTimeout(() => {
-            flyAlongRoute(
-              map,
-              decodedPath.map((p) => ({
-                latitude: p.lat(),
-                longitude: p.lng(),
-              }))
-            );
-          }, 5000);
+          // setTimeout(() => {
+          //   flyAlongRoute(
+          //     map,
+          //     decodedPath.map((p) => ({
+          //       latitude: p.lat(),
+          //       longitude: p.lng(),
+          //     }))
+          //   );
+          // }, 5000);
 
           removeElementsWithClass(ROUTE_POLYLINE);
 
@@ -489,8 +489,8 @@ export default function Page() {
               className="w-24"
             />
             <ul className="flex items-center gap-4 text-sm">
-              <NavItem label="Dashboard" href="/app/dashboard" />
-              <NavItem label="Profile" href="/app/profile" />
+              <NavItem label="Dashboard" href="/safaris" />
+              <NavItem label="Profile" href="/profile" />
             </ul>
             <div className="ml-auto">
               <UserMenu />

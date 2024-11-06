@@ -31,7 +31,7 @@ export default function UserMenu() {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <Link href="/app/profile">Profile</Link>
+          <Link href="/profile">Profile</Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>

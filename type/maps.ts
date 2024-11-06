@@ -217,6 +217,7 @@ export interface FlyCameraOptions {
     center: Coordinate;
     tilt: number;
     range: number;
+    heading?: number;
   };
   durationMillis: number;
 }
