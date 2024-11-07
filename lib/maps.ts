@@ -296,9 +296,15 @@ export function createPolygon(
   map: google.maps.maps3d.Map3DElement,
   points: LatLng[],
   altitude: number = 300,
-  id: string
+  id: string,
+  strokeColor?: string,
+  fillColor?: string
 ) {
-  const polygon = new google.maps.maps3d.Polygon3DElement(polygonOptions);
+  const options = polygonOptions;
+
+  if (strokeColor) options.strokeColor = strokeColor;
+  if (fillColor) options.fillColor = fillColor;
+  const polygon = new google.maps.maps3d.Polygon3DElement(options);
   polygon.outerCoordinates = points.map((p) => ({
     lat: p.latitude,
     lng: p.longitude,

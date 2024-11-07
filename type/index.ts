@@ -75,6 +75,9 @@ export type SafariPolygon = Models.Document & {
   description?: string;
   points: string[];
   altitude: number;
+  strokeColor: string;
+  fillColor: string;
+  opacity: number;
 };
 
 export type LucideIcon = React.ForwardRefExoticComponent<

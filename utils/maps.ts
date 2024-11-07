@@ -49,6 +49,7 @@ export class MarkerUtils {
 
     const marker = new Marker3DElement({
       position: { lat, lng },
+      collisionBehavior: google.maps.CollisionBehavior.REQUIRED,
     });
 
     const template = document.createElement("template");

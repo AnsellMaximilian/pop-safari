@@ -21,6 +21,8 @@ import { SafariPolygon } from "@/type";
 import { useUser } from "@/contexts/user/UserContext";
 import { CollapsibleContext } from "@/components/CollapsibleController";
 import { X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { hexToRGBA } from "@/utils/common";
 
 export default function PolygonControls() {
   const {
@@ -40,6 +42,9 @@ export default function PolygonControls() {
   const { toast } = useToast();
 
   const [altitude, setAltitude] = useState(25);
+  const [strokeColor, setStrokeColor] = useState("#F97316");
+  const [fillColor, setFillColor] = useState("#F97316");
+  const [opacity, setOpacity] = useState(0.1);
 
   const [isCreating, setIsCreating] = useState(false);
 
@@ -57,6 +62,9 @@ export default function PolygonControls() {
           safariId: selectedSafari.$id,
           points: currentPolygonPoints.map((p) => JSON.stringify(p)),
           altitude: altitude,
+          opacity,
+          fillColor,
+          strokeColor,
         },
         [
           Permission.delete(Role.user(currentUser.$id)),
@@ -107,25 +115,95 @@ export default function PolygonControls() {
         </div>
       )}
       {isCurrentMode && (
-        <div className="mt-4 space-y-2">
-          <Label>Adjust Polygon Height</Label>
-          <Slider
-            value={[altitude]}
-            max={250}
-            step={1}
-            onValueChange={(val) => {
-              setAltitude(val[0]);
-              if (currentPolygonId && map) {
-                removeElementsWithSelector(`#${currentPolygonId}`);
-                createPolygon(
-                  map,
-                  currentPolygonPoints,
-                  val[0],
-                  currentPolygonId
-                );
-              }
-            }}
-          />
+        <div className="mt-4 space-y-4">
+          <div className="space-y-2">
+            <Label>Stroke Color</Label>
+            <Input
+              type="color"
+              value={strokeColor}
+              onChange={(e) => {
+                setStrokeColor(e.target.value);
+                if (currentPolygonId && map) {
+                  removeElementsWithSelector(`#${currentPolygonId}`);
+                  createPolygon(
+                    map,
+                    currentPolygonPoints,
+                    altitude,
+                    currentPolygonId,
+                    e.target.value,
+                    hexToRGBA(fillColor, opacity)
+                  );
+                }
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Fill Color</Label>
+            <Input
+              type="color"
+              value={fillColor}
+              onChange={(e) => {
+                setFillColor(e.target.value);
+                if (currentPolygonId && map) {
+                  removeElementsWithSelector(`#${currentPolygonId}`);
+
+                  createPolygon(
+                    map,
+                    currentPolygonPoints,
+                    altitude,
+                    currentPolygonId,
+                    strokeColor,
+                    hexToRGBA(e.target.value, opacity)
+                  );
+                }
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Opacity</Label>
+            <Slider
+              value={[opacity]}
+              max={0.5}
+              step={0.1}
+              min={0.1}
+              onValueChange={(val) => {
+                setOpacity(val[0]);
+                if (currentPolygonId && map) {
+                  removeElementsWithSelector(`#${currentPolygonId}`);
+                  createPolygon(
+                    map,
+                    currentPolygonPoints,
+                    altitude,
+                    currentPolygonId,
+                    strokeColor,
+                    hexToRGBA(fillColor, val[0])
+                  );
+                }
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Adjust Polygon Height</Label>
+            <Slider
+              value={[altitude]}
+              max={250}
+              step={1}
+              onValueChange={(val) => {
+                setAltitude(val[0]);
+                if (currentPolygonId && map) {
+                  removeElementsWithSelector(`#${currentPolygonId}`);
+                  createPolygon(
+                    map,
+                    currentPolygonPoints,
+                    val[0],
+                    currentPolygonId,
+                    strokeColor,
+                    hexToRGBA(fillColor, opacity)
+                  );
+                }
+              }}
+            />
+          </div>
         </div>
       )}
 

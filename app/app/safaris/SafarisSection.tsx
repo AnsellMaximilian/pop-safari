@@ -48,7 +48,7 @@ import {
 } from "@/utils/maps";
 import { config, databases } from "@/lib/appwrite";
 import { Query } from "appwrite";
-import { excludeStartAndEnd } from "@/utils/common";
+import { excludeStartAndEnd, hexToRGBA } from "@/utils/common";
 import { useAppData } from "../useAppData";
 import Header from "../Header";
 
@@ -325,39 +325,41 @@ export default function SafariSection() {
           )
         );
 
-        loader.load().then(async () => {
-          const { encoding } = (await google.maps.importLibrary(
-            "geometry"
-          )) as google.maps.GeometryLibrary;
+        if (res?.routes?.length) {
+          loader.load().then(async () => {
+            const { encoding } = (await google.maps.importLibrary(
+              "geometry"
+            )) as google.maps.GeometryLibrary;
 
-          const decodedPath = encoding.decodePath(
-            res.routes[0].polyline.encodedPolyline
-          );
+            const decodedPath = encoding.decodePath(
+              res.routes[0].polyline.encodedPolyline
+            );
 
-          // setTimeout(() => {
-          //   flyAlongRoute(
-          //     map,
-          //     decodedPath.map((p) => ({
-          //       latitude: p.lat(),
-          //       longitude: p.lng(),
-          //     }))
-          //   );
-          // }, 5000);
+            // setTimeout(() => {
+            //   flyAlongRoute(
+            //     map,
+            //     decodedPath.map((p) => ({
+            //       latitude: p.lat(),
+            //       longitude: p.lng(),
+            //     }))
+            //   );
+            // }, 5000);
 
-          removeElementsWithClass(ROUTE_POLYLINE);
+            removeElementsWithClass(ROUTE_POLYLINE);
 
-          const polyline = new google.maps.maps3d.Polyline3DElement(
-            polylineOptions
-          );
+            const polyline = new google.maps.maps3d.Polyline3DElement(
+              polylineOptions
+            );
 
-          polyline.coordinates = decodedPath.map((p) => ({
-            lat: p.lat(),
-            lng: p.lng(),
-          }));
-          polyline.classList.add(ROUTE_POLYLINE);
+            polyline.coordinates = decodedPath.map((p) => ({
+              lat: p.lat(),
+              lng: p.lng(),
+            }));
+            polyline.classList.add(ROUTE_POLYLINE);
 
-          map?.append(polyline);
-        });
+            map?.append(polyline);
+          });
+        }
       }
     })();
   }, [safariSpots, map]);
@@ -373,7 +375,14 @@ export default function SafariSection() {
             points = p.points.map((ps) => JSON.parse(ps)) as LatLng[];
           } catch (error) {}
 
-          createPolygon(map, points, p.altitude, p.$id);
+          createPolygon(
+            map,
+            points,
+            p.altitude,
+            p.$id,
+            p.strokeColor,
+            hexToRGBA(p.fillColor, p.opacity)
+          );
         });
       }
     })();
