@@ -110,6 +110,10 @@ export interface LatLng {
   longitude: number;
 }
 
+export interface LatLngAlt extends LatLng {
+  altitude: number;
+}
+
 export interface RouteStep {
   distanceMeters: number;
   staticDuration: string;

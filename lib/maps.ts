@@ -8,6 +8,7 @@ import {
 import {
   FlyCameraOptions,
   LatLng,
+  LatLngAlt,
   PlaceData,
   RouteRequest,
   RouteResponse,
@@ -372,7 +373,6 @@ export function flyAlongRoute(
       const progress = (time - startTime) / durationPerStep;
       const easedProgress = Math.min(progress, 1);
 
-      // Interpolate each property
       map.center = {
         lat:
           startCenter.lat +
@@ -392,13 +392,135 @@ export function flyAlongRoute(
       if (progress < 1) {
         requestAnimationFrame(animateStep);
       } else {
-        currentStep++; // Move to the next step
-        flyToNextStep(); // Recursively call for the next point
+        currentStep++;
+        flyToNextStep();
       }
     }
 
     requestAnimationFrame(animateStep);
   }
 
-  flyToNextStep(); // Start the animation with the first step
+  flyToNextStep();
+}
+export async function getAltitudesForPoints(
+  points: LatLng[],
+  offset: number = 50
+): Promise<LatLngAlt[]> {
+  const altitudes = await Promise.all(
+    points.map(async (point) => {
+      const elevation = await getElevation({
+        latitude: point.latitude,
+        longitude: point.longitude,
+      });
+      return { ...point, altitude: elevation + offset };
+    })
+  );
+  return altitudes;
+}
+
+function calculateHeading(start: LatLng, end: LatLng): number {
+  const dLon = ((end.longitude - start.longitude) * Math.PI) / 180;
+  const lat1 = (start.latitude * Math.PI) / 180;
+  const lat2 = (end.latitude * Math.PI) / 180;
+
+  const y = Math.sin(dLon) * Math.cos(lat2);
+  const x =
+    Math.cos(lat1) * Math.sin(lat2) -
+    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
+function getOffsetPosition(
+  start: LatLng,
+  heading: number,
+  distanceMeters: number
+): LatLng {
+  const earthRadius = 6371000;
+  const angularDistance = distanceMeters / earthRadius;
+
+  const lat1 = (start.latitude * Math.PI) / 180;
+  const lng1 = (start.longitude * Math.PI) / 180;
+  const headingRad = (heading * Math.PI) / 180;
+
+  const lat2 = Math.asin(
+    Math.sin(lat1) * Math.cos(angularDistance) +
+      Math.cos(lat1) * Math.sin(angularDistance) * Math.cos(headingRad)
+  );
+  const lng2 =
+    lng1 +
+    Math.atan2(
+      Math.sin(headingRad) * Math.sin(angularDistance) * Math.cos(lat1),
+      Math.cos(angularDistance) - Math.sin(lat1) * Math.sin(lat2)
+    );
+
+  return {
+    latitude: (lat2 * 180) / Math.PI,
+    longitude: (lng2 * 180) / Math.PI,
+  };
+}
+
+export async function animateCameraAlongRouteWithForwardLooking(
+  map: google.maps.maps3d.Map3DElement,
+  points: LatLng[],
+  durationPerStep: number = 2000,
+  followDistance: number = 10
+) {
+  const pointsWithAltitudes = await getAltitudesForPoints(points);
+
+  let currentPoint = 0;
+
+  function flyToNextSegment() {
+    if (currentPoint >= pointsWithAltitudes.length - 1) return;
+
+    const start = pointsWithAltitudes[currentPoint];
+    const end = pointsWithAltitudes[currentPoint + 1];
+    const heading = calculateHeading(start, end);
+
+    const offsetPosition = getOffsetPosition(start, heading, -followDistance);
+    const targetAltitude = end.altitude;
+
+    const startCenter = map.center!;
+    const startTilt = map.tilt!;
+    const startHeading = map.heading!;
+    const startRange = map.range!;
+    let startAltitude = start.altitude;
+
+    const targetTilt = 45;
+    const targetRange = 500;
+    let startTime: number | null = null;
+
+    function animateStep(time: number) {
+      if (!startTime) startTime = time;
+      const progress = (time - startTime) / durationPerStep;
+      const easedProgress = Math.min(progress, 1);
+
+      const interpolatedAltitude =
+        startAltitude + (targetAltitude - startAltitude) * easedProgress;
+
+      // Update map center and heading to face forward along the segment direction
+      map.center = {
+        lat:
+          startCenter.lat +
+          (offsetPosition.latitude - startCenter.lat) * easedProgress,
+        lng:
+          startCenter.lng +
+          (offsetPosition.longitude - startCenter.lng) * easedProgress,
+        altitude: interpolatedAltitude,
+      };
+      map.tilt = startTilt + (targetTilt - startTilt) * easedProgress;
+      map.heading = startHeading + (heading - startHeading) * easedProgress; // Adjust heading
+      map.range = startRange + (targetRange - startRange) * easedProgress;
+
+      if (progress < 1) {
+        requestAnimationFrame(animateStep);
+      } else {
+        currentPoint++;
+        flyToNextSegment();
+      }
+    }
+
+    requestAnimationFrame(animateStep);
+  }
+
+  flyToNextSegment();
 }
