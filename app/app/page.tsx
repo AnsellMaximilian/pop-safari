@@ -7,6 +7,7 @@ import { FlyCameraOptions } from "@/type/maps";
 import React, { createContext, useEffect, useRef, useState } from "react";
 import ProfileSection from "./profile/ProfileSection";
 import SafariSection from "./safaris/SafarisSection";
+import privateRoute from "@/hooks/privateRoute";
 
 export enum AppMenuType {
   SAFARIS = "SAFARIS",
@@ -29,7 +30,7 @@ export const AppPageContext = createContext<AppPageContextData | undefined>(
   undefined
 );
 
-export default function AppPage() {
+function AppPage() {
   const [map, setMap] = useState<google.maps.maps3d.Map3DElement | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -154,3 +155,5 @@ export default function AppPage() {
     </AppPageContext.Provider>
   );
 }
+
+export default privateRoute(AppPage);

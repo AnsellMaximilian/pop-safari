@@ -128,7 +128,7 @@ function RegisterPage() {
     if (currentUser) {
       setRegisterStep(RegisterStep.PROFILE);
 
-      if (currentUser.profile) router.push("/dashboard");
+      if (currentUser.profile) router.push("/app");
 
       if (map) {
         // @ts-ignore
@@ -194,7 +194,7 @@ function RegisterPage() {
       setCurrentUser((prev) =>
         prev ? { ...prev, profile: createdProfile } : null
       );
-      router.push("/dashboard");
+      router.push("/app");
     } catch (error) {
       if (error instanceof Error) errorMsg = error.message;
       hasError = true;
