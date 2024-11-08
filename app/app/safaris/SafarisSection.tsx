@@ -27,12 +27,13 @@ import {
   createPolygon,
   flyAlongRoute,
   getBaseRouteRequest,
+  getElevation,
   getPlaceDetails,
   initAutocomplete,
   loader,
 } from "@/lib/maps";
 import { Input } from "@/components/ui/input";
-import { LatLng, Map3dEvent, PlaceData } from "@/type/maps";
+import { FlyCameraOptions, LatLng, Map3dEvent, PlaceData } from "@/type/maps";
 import {
   POLYGON,
   POLYGON_POINT,
@@ -288,6 +289,29 @@ export default function SafariSection() {
           )
         ).documents as SafariPolygon[];
         setSafariPolygons(polygons);
+
+        if (spots.length > 0) {
+          if (map) {
+            const s = spots[0];
+            const opts: FlyCameraOptions = {
+              endCamera: {
+                center: {
+                  lat: s.lat,
+                  lng: s.lng,
+                  altitude: await getElevation({
+                    latitude: s.lat,
+                    longitude: s.lng,
+                  }),
+                },
+                range: 1000,
+                tilt: 67.5,
+              },
+              durationMillis: 1000,
+            };
+            // @ts-ignore
+            map.flyCameraTo(opts);
+          }
+        }
       }
     })();
   }, [selectedSafari]);

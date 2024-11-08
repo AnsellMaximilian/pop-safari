@@ -41,7 +41,6 @@ function AppPage() {
   );
 
   useEffect(() => {
-    console.log({ map, selectedMenu });
     if (map) {
       let flyOptions: FlyCameraOptions = {
         endCamera: {
