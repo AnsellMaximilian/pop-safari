@@ -1,6 +1,7 @@
 "use client";
 
 import { Safari, SafariPolygon, SafariSpot } from "@/type";
+import defSafari from "@/assets/safari.svg";
 import React, { useContext, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -14,7 +15,7 @@ import { Eye, Trash, X } from "lucide-react";
 import { CollapsibleContext } from "@/components/CollapsibleController";
 import { FlyCameraOptions, LatLng } from "@/type/maps";
 import { findCenter, getElevation, getElevationforPoint } from "@/lib/maps";
-import { config, databases } from "@/lib/appwrite";
+import { config, databases, storage } from "@/lib/appwrite";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 
@@ -63,6 +64,19 @@ export default function SafariDetails({
           <div className="text-[0.8rem] text-muted-foreground text-center">
             This section shows general details for the Safari you&apos;re
             currently viewing.
+          </div>
+          <div>
+            <img
+              src={
+                safari.imageId
+                  ? storage.getFileView(config.bucketId, safari.imageId)
+                  : defSafari
+              }
+              width={200}
+              height={200}
+              className="w-full h-64 object-cover border-border border"
+              alt="user profile"
+            />
           </div>
           <div>
             {safari.description ? safari.description : "No description."}

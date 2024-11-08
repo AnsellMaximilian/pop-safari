@@ -65,9 +65,9 @@ export default function SafariView({ safari }: { safari: Safari }) {
           >
             <ChevronLeftIcon />
           </Button>
-          <div>
+          <div className="grow">
             <h2 className="font-bold text-xs">Safari Mode</h2>
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-between">
               <h1>{truncateString(safari.title, 15)}</h1>
               <SafariStatusBadge safari={safari} />
             </div>

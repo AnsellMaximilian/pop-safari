@@ -497,23 +497,25 @@ export default function SafariSection() {
           </Card>
         </div>
 
-        <Card
+        <div
           className={cn(
-            "absolute top-4 left-4 z-10 bottom-4 md:w-[500px] max-w-full transition-all duration-500",
+            "absolute top-4 left-4 z-10 bottom-4 md:w-[500px] max-w-full transition-all duration-500 flex flex-col overflow-y-auto",
             pageMode === SafariPageMode.CREATE
               ? "translate-x-0"
               : "-translate-x-[1000px]"
           )}
         >
-          <CardHeader className="text-center">
-            <CardTitle className="">Create Safari</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CreateSafari
-              onFinishCreate={async () => setPageMode(SafariPageMode.VIEW)}
-            />
-          </CardContent>
-        </Card>
+          <Card className="w-full grow">
+            <CardHeader className="text-center">
+              <CardTitle className="">Create Safari</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CreateSafari
+                onFinishCreate={async () => setPageMode(SafariPageMode.VIEW)}
+              />
+            </CardContent>
+          </Card>
+        </div>
 
         <Header />
       </>

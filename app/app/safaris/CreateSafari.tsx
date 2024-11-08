@@ -39,6 +39,13 @@ import { config, databases, storage } from "@/lib/appwrite";
 import { ID, Permission, Role } from "appwrite";
 import { useData } from "@/contexts/data/DataContext";
 import { SafariPageContext, SafariPageMode } from "./SafarisSection";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 export const safariFormSchema = z.object({
   title: z.string().min(5).max(50),
   description: z.string().max(500),
@@ -175,7 +182,7 @@ export default function CreateSafari({
               <Input
                 type="file"
                 className="hidden"
-                accept="image/*"
+                accept="image/jpeg, image/png, image/gif"
                 onChange={handleSafariImageChange}
                 ref={fileInputRef}
               />
@@ -208,6 +215,45 @@ export default function CreateSafari({
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={createSafariForm.control}
+          name="visibility"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Visibility</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a verified email to display" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={SafariVisibility.PRIVATE}>
+                    Private -{" "}
+                    <span className="text-xs text-muted-foreground">
+                      Only shows up on your feed
+                    </span>
+                  </SelectItem>
+                  <SelectItem value={SafariVisibility.FRIENDS}>
+                    Friends -{" "}
+                    <span className="text-xs text-muted-foreground">
+                      People who&apos;ve added you can see it in their feed
+                    </span>
+                  </SelectItem>
+                  <SelectItem value={SafariVisibility.PUBLIC}>
+                    Public -{" "}
+                    <span className="text-xs text-muted-foreground">
+                      Can show up on everyone&apos;s feed
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
               <FormMessage />
             </FormItem>
           )}
