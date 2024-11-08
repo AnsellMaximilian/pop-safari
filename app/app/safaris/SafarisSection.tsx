@@ -460,40 +460,42 @@ export default function SafariSection() {
         {selectedSafari && pageMode === SafariPageMode.DETAILS && (
           <SafariView safari={selectedSafari} />
         )}
-        <Card
+        <div
           className={cn(
-            "absolute top-4 left-4 z-10 bottom-4 md:w-[500px] max-w-full transition-all duration-500",
+            "absolute top-4 left-4 z-10 bottom-4 md:w-[500px] max-w-full transition-all duration-500 flex flex-col overflow-y-auto",
             pageMode === SafariPageMode.VIEW
               ? "translate-x-0"
               : "-translate-x-[1000px]"
           )}
         >
-          <CardHeader className="text-center">
-            <CardTitle className="">Safaris</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {safaris.data.length > 0 ? (
-              <SafariList />
-            ) : (
-              <div className="flex flex-col gap-4 items-center mt-16">
-                <Image
-                  src={emptySafari}
-                  width={500}
-                  height={500}
-                  alt="empty safari"
-                  className="w-64"
-                />
-                <p className="mt-8">
-                  Start your own adventures by creating your first{" "}
-                  <strong>Safari</strong>
-                </p>
-                <Button onClick={() => setPageMode(SafariPageMode.CREATE)}>
-                  Create Safari
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          <Card className="w-full grow">
+            <CardHeader className="text-center">
+              <CardTitle className="">Safaris</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {safaris.data.length > 0 ? (
+                <SafariList />
+              ) : (
+                <div className="flex flex-col gap-4 items-center mt-16">
+                  <Image
+                    src={emptySafari}
+                    width={500}
+                    height={500}
+                    alt="empty safari"
+                    className="w-64"
+                  />
+                  <p className="mt-8">
+                    Start your own adventures by creating your first{" "}
+                    <strong>Safari</strong>
+                  </p>
+                  <Button onClick={() => setPageMode(SafariPageMode.CREATE)}>
+                    Create Safari
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         <Card
           className={cn(

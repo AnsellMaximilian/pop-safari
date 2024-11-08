@@ -17,7 +17,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
-import { NavItem } from "../layout";
 import UserMenu from "@/components/UserMenu";
 import emptySafari from "@/assets/empty-safari.svg";
 import { Safari, SafariVisibility } from "@/type";

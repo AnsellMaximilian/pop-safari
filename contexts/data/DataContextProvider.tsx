@@ -9,7 +9,7 @@ import {
 } from "@/utils/common";
 import { Query } from "appwrite";
 import { useUser } from "../user/UserContext";
-import { RemoteData, Safari } from "@/type";
+import { RemoteData, Safari, SafariVisibility } from "@/type";
 
 export const DataContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -17,11 +17,19 @@ export const DataContextProvider: React.FC<{ children: ReactNode }> = ({
   const [safaris, setSafaris] = useState<RemoteData<Safari[]>>(
     getDefaultRemoteData([])
   );
+
+  const [friendSafaris, setFriendSafaris] = useState<RemoteData<Safari[]>>(
+    getDefaultRemoteData([])
+  );
+
+  const [publicSafaris, setPublicSafaris] = useState<RemoteData<Safari[]>>(
+    getDefaultRemoteData([])
+  );
   const { currentUser } = useUser();
 
   useEffect(() => {
     (async () => {
-      if (currentUser) {
+      if (currentUser?.profile) {
         setRemoteDataLoading(setSafaris, true);
 
         const ownSafaris = (
@@ -36,6 +44,52 @@ export const DataContextProvider: React.FC<{ children: ReactNode }> = ({
           ...prev,
           data: ownSafaris,
         }));
+
+        setRemoteDataLoading(setSafaris, false);
+      }
+    })();
+  }, [currentUser]);
+
+  useEffect(() => {
+    (async () => {
+      if (currentUser?.profile) {
+        setRemoteDataLoading(setFriendSafaris, true);
+        setRemoteDataLoading(setPublicSafaris, true);
+
+        const friendSafarisPromise =
+          currentUser.profile.friendIds.length > 0
+            ? databases
+                .listDocuments(config.dbId, config.safariCollectionId, [
+                  Query.equal("userId", currentUser.profile.friendIds),
+                ])
+                .then((res) => res.documents as Safari[])
+            : Promise.resolve([]);
+
+        const publicSafarisPromise = databases
+          .listDocuments(config.dbId, config.safariCollectionId, [
+            Query.and([
+              Query.equal("visibility", SafariVisibility.PUBLIC),
+              Query.notEqual("userId", currentUser.$id),
+            ]),
+          ])
+          .then((res) => res.documents as Safari[]);
+
+        const [friendSafaris, publicSafaris] = await Promise.all([
+          friendSafarisPromise,
+          publicSafarisPromise,
+        ]);
+
+        setFriendSafaris((prev) => ({
+          ...prev,
+          data: friendSafaris,
+        }));
+
+        setPublicSafaris((prev) => ({
+          ...prev,
+          data: publicSafaris,
+        }));
+        setRemoteDataLoading(setFriendSafaris, false);
+        setRemoteDataLoading(setPublicSafaris, false);
       }
     })();
   }, [currentUser]);
@@ -43,6 +97,14 @@ export const DataContextProvider: React.FC<{ children: ReactNode }> = ({
     <DataContext.Provider
       value={{
         safaris: getRemoteDataWithSetter<Safari[]>(safaris, setSafaris),
+        friendSafaris: getRemoteDataWithSetter<Safari[]>(
+          friendSafaris,
+          setSafaris
+        ),
+        publicSafaris: getRemoteDataWithSetter<Safari[]>(
+          publicSafaris,
+          setSafaris
+        ),
       }}
     >
       {children}

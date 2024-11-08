@@ -6,15 +6,16 @@ import { SafariPageContext, SafariPageMode } from "./SafarisSection";
 import { Button } from "@/components/ui/button";
 import { truncateString } from "@/utils/common";
 import SafariStatusBadge from "./SafariStatusBadge";
+import SafariCard from "./SafariCard";
 
 export default function SafariList() {
-  const { safaris } = useData();
+  const { safaris, publicSafaris, friendSafaris } = useData();
 
   const { setPageMode, setSelectedSafari } = useContext(SafariPageContext);
 
   return (
-    <div>
-      <div>
+    <div className="space-y-4">
+      <div className="">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold uppercase">Your Safaris</h2>
           <Button
@@ -28,26 +29,55 @@ export default function SafariList() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           {safaris.data.map((s) => (
-            <div
-              onClick={() => {
-                setSelectedSafari(s);
-                setPageMode(SafariPageMode.DETAILS);
-              }}
-              key={s.$id}
-              className="p-4 min-h-32 border-border border rounded-md shadow-sm cursor-pointer hover:bg-secondary hover:text-secondary-foreground"
-            >
-              <div className="flex justify-between items-center gap-2">
-                <h2 className="font-semibold">{truncateString(s.title, 15)}</h2>
-                <SafariStatusBadge safari={s} />
-              </div>
-              <p className="font-extralight">
-                {s.description
-                  ? truncateString(s.description, 25)
-                  : "No description."}
-              </p>
-            </div>
+            <SafariCard safari={s} key={s.$id} loading={safaris.isLoading} />
           ))}
         </div>
+      </div>
+
+      <div className="">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold uppercase">
+            Friends&apos; Safaris
+          </h2>
+        </div>
+        {!friendSafaris.isLoading && friendSafaris.data.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4">
+            {friendSafaris.data.map((s) => (
+              <SafariCard
+                safari={s}
+                key={s.$id}
+                loading={friendSafaris.isLoading}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-muted-foreground text-center">
+            Your friends&apos; Safaris will show up here if they&apos;ve set is
+            in Friends mode.
+          </div>
+        )}
+      </div>
+
+      <div className="">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold uppercase">Public Safaris</h2>
+        </div>
+        {!publicSafaris.isLoading && publicSafaris.data.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4">
+            {publicSafaris.data.map((s) => (
+              <SafariCard
+                safari={s}
+                key={s.$id}
+                loading={publicSafaris.isLoading}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-muted-foreground text-center">
+            People&apos;s Safaris which have been set as public will show up
+            here
+          </div>
+        )}
       </div>
     </div>
   );
