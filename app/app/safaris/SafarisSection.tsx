@@ -62,6 +62,7 @@ export enum SafariViewMode {
   SEARCH = "SEARCH",
   POLYGON = "POLYGON",
   HOME = "HOME",
+  TOUR = "TOUR",
 }
 
 export enum SafariPageMode {

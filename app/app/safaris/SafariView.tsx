@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Safari, SafariSpot, SafariStatus } from "@/type";
 import { ChevronLeftIcon } from "@radix-ui/react-icons";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   SafariPageContext,
   SafariPageMode,
@@ -19,6 +19,7 @@ import {
   BoxIcon,
   Home,
   Info,
+  Eye,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -33,6 +34,7 @@ import PolygonControls from "./PolygonControls";
 import SafariDetails from "./SafariDetails";
 import { truncateString } from "@/utils/common";
 import { X } from "lucide-react";
+import { useUser } from "@/contexts/user/UserContext";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -50,6 +52,18 @@ export default function SafariView({ safari }: { safari: Safari }) {
     safariPolygons,
     safariSpots,
   } = useContext(SafariPageContext);
+
+  const { currentUser } = useUser();
+
+  useEffect(() => {
+    if (
+      currentUser &&
+      selectedSafari &&
+      currentUser.$id !== selectedSafari.userId
+    ) {
+      setSafariViewMode(SafariViewMode.TOUR);
+    }
+  }, [currentUser]);
 
   return (
     <>
@@ -88,33 +102,44 @@ export default function SafariView({ safari }: { safari: Safari }) {
             });
           }}
         >
+          {currentUser?.$id === selectedSafari?.userId && (
+            <>
+              <ToggleGroupItem
+                value={SafariViewMode.HOME}
+                aria-label="Toggle Home Mode"
+                className="border-border border"
+              >
+                <Home className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value={SafariViewMode.ROUTE}
+                aria-label="Toggle Route Mode"
+                className="border-border border"
+              >
+                <MapPin className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value={SafariViewMode.SEARCH}
+                aria-label="Toggle Search Mode"
+                className="border-border border"
+              >
+                <Search className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value={SafariViewMode.POLYGON}
+                aria-label="Toggle Polygon Mode"
+                className="border-border border"
+              >
+                <Box className="h-4 w-4" />
+              </ToggleGroupItem>
+            </>
+          )}
           <ToggleGroupItem
-            value={SafariViewMode.HOME}
-            aria-label="Toggle Home Mode"
+            value={SafariViewMode.TOUR}
+            aria-label="Toggle Tour Mode"
             className="border-border border"
           >
-            <Home className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem
-            value={SafariViewMode.ROUTE}
-            aria-label="Toggle Route Mode"
-            className="border-border border"
-          >
-            <MapPin className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem
-            value={SafariViewMode.SEARCH}
-            aria-label="Toggle Search Mode"
-            className="border-border border"
-          >
-            <Search className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem
-            value={SafariViewMode.POLYGON}
-            aria-label="Toggle Polygon Mode"
-            className="border-border border"
-          >
-            <Box className="h-4 w-4" />
+            <Eye className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
