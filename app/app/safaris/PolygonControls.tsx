@@ -23,6 +23,7 @@ import { CollapsibleContext } from "@/components/CollapsibleController";
 import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { hexToRGBA } from "@/utils/common";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function PolygonControls() {
   const {
@@ -45,6 +46,8 @@ export default function PolygonControls() {
   const [strokeColor, setStrokeColor] = useState("#F97316");
   const [fillColor, setFillColor] = useState("#F97316");
   const [opacity, setOpacity] = useState(0.1);
+  const [polygonTitle, setPolygonTitle] = useState("");
+  const [polygonDesc, setPolygonDesc] = useState("");
 
   const [isCreating, setIsCreating] = useState(false);
 
@@ -58,7 +61,8 @@ export default function PolygonControls() {
         config.polygonCollectionId,
         ID.unique(),
         {
-          title: "Polygon",
+          title: polygonTitle || "Polygon",
+          description: polygonDesc,
           safariId: selectedSafari.$id,
           points: currentPolygonPoints.map((p) => JSON.stringify(p)),
           altitude: altitude,
@@ -116,48 +120,69 @@ export default function PolygonControls() {
       )}
       {isCurrentMode && (
         <div className="mt-4 space-y-4">
-          <div className="space-y-2">
-            <Label>Stroke Color</Label>
+          <div className="space-y-2 grow">
+            <Label>Title</Label>
             <Input
-              type="color"
-              value={strokeColor}
+              type="text"
+              value={polygonTitle}
               onChange={(e) => {
-                setStrokeColor(e.target.value);
-                if (currentPolygonId && map) {
-                  removeElementsWithSelector(`#${currentPolygonId}`);
-                  createPolygon(
-                    map,
-                    currentPolygonPoints,
-                    altitude,
-                    currentPolygonId,
-                    e.target.value,
-                    hexToRGBA(fillColor, opacity)
-                  );
-                }
+                setPolygonTitle(e.target.value);
               }}
             />
           </div>
-          <div className="space-y-2">
-            <Label>Fill Color</Label>
-            <Input
-              type="color"
-              value={fillColor}
+          <div className="space-y-2 grow">
+            <Label>Description</Label>
+            <Textarea
+              value={polygonDesc}
               onChange={(e) => {
-                setFillColor(e.target.value);
-                if (currentPolygonId && map) {
-                  removeElementsWithSelector(`#${currentPolygonId}`);
-
-                  createPolygon(
-                    map,
-                    currentPolygonPoints,
-                    altitude,
-                    currentPolygonId,
-                    strokeColor,
-                    hexToRGBA(e.target.value, opacity)
-                  );
-                }
+                setPolygonDesc(e.target.value);
               }}
             />
+          </div>
+          <div className="flex gap-2">
+            <div className="space-y-2 grow">
+              <Label>Stroke Color</Label>
+              <Input
+                type="color"
+                value={strokeColor}
+                onChange={(e) => {
+                  setStrokeColor(e.target.value);
+                  if (currentPolygonId && map) {
+                    removeElementsWithSelector(`#${currentPolygonId}`);
+                    createPolygon(
+                      map,
+                      currentPolygonPoints,
+                      altitude,
+                      currentPolygonId,
+                      e.target.value,
+                      hexToRGBA(fillColor, opacity)
+                    );
+                  }
+                }}
+              />
+            </div>
+            <div className="space-y-2 grow">
+              <Label>Fill Color</Label>
+              <Input
+                type="color"
+                value={fillColor}
+                onChange={(e) => {
+                  setFillColor(e.target.value);
+                  if (currentPolygonId && map) {
+                    removeElementsWithSelector(`#${currentPolygonId}`);
+
+                    createPolygon(
+                      map,
+                      currentPolygonPoints,
+                      altitude,
+                      currentPolygonId,
+                      strokeColor,
+                      hexToRGBA(e.target.value, opacity)
+                    );
+                  }
+                }}
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Opacity</Label>
