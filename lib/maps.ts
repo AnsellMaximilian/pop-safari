@@ -353,24 +353,26 @@ export function findCenter(coordinates: LatLng[]): LatLng {
   return { latitude: centerLat, longitude: centerLng };
 }
 
-export function flyAlongRoute(
+export async function flyAlongRoute(
   map: google.maps.maps3d.Map3DElement,
   steps: LatLng[],
   durationPerStep: number = 500
 ) {
+  const pointsWithAltitudes = await getAltitudesForPoints(steps);
+
   let currentStep = 0;
 
   function flyToNextStep() {
-    if (currentStep >= steps.length - 1) return;
+    if (currentStep >= pointsWithAltitudes.length - 1) return;
 
     const startCenter = map.center!;
-    const targetCenter = steps[currentStep];
+    const targetCenter = pointsWithAltitudes[currentStep];
     const startTilt = map.tilt || 45;
-    const targetTilt = 45; // Example tilt
+    const targetTilt = 45;
     const startHeading = map.heading || 10;
-    const targetHeading = startHeading + 10; // Adjust heading slightly for effect
+    const targetHeading = startHeading + 10;
     const startRange = map.range || 500;
-    const targetRange = 500; // Adjust range to zoom if needed
+    const targetRange = 500;
 
     let startTime: number | null = null;
 
