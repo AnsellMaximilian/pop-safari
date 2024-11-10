@@ -359,15 +359,15 @@ export default function SafariSection() {
               res.routes[0].polyline.encodedPolyline
             );
 
-            // setTimeout(() => {
-            //   flyAlongRoute(
-            //     map,
-            //     decodedPath.map((p) => ({
-            //       latitude: p.lat(),
-            //       longitude: p.lng(),
-            //     }))
-            //   );
-            // }, 5000);
+            setTimeout(() => {
+              flyAlongRoute(
+                map,
+                decodedPath.map((p) => ({
+                  latitude: p.lat(),
+                  longitude: p.lng(),
+                }))
+              );
+            }, 5000);
 
             removeElementsWithClass(ROUTE_POLYLINE);
 

@@ -4,6 +4,7 @@ import {
   POLYGON_POINT,
   polygonOptions,
   SEARCH_PLACE_MARKER,
+  TOUR_MARKER,
 } from "@/const/maps";
 import {
   FlyCameraOptions,
@@ -358,6 +359,7 @@ export async function flyAlongRoute(
   steps: LatLng[],
   durationPerStep: number = 500
 ) {
+  removeElementsWithClass(TOUR_MARKER);
   const pointsWithAltitudes = await getAltitudesForPoints(steps);
 
   const initialCenter = {
@@ -365,7 +367,7 @@ export async function flyAlongRoute(
     longitude: pointsWithAltitudes[0].longitude,
     altitude: pointsWithAltitudes[0].altitude,
   };
-  const groundCircle = createGroundCircle(map, initialCenter, 50);
+  const groundCircle = createGroundCircle(map, initialCenter, 10);
 
   let currentStep = 0;
 
@@ -397,7 +399,7 @@ export async function flyAlongRoute(
           (targetCenter.longitude - startCenter.lng) * easedProgress,
         altitude:
           startCenter.altitude +
-          (startCenter.altitude - startCenter.altitude) * easedProgress,
+          (targetCenter.altitude - startCenter.altitude) * easedProgress,
       };
       map.tilt = startTilt + (targetTilt - startTilt) * easedProgress;
       map.heading =
@@ -410,7 +412,7 @@ export async function flyAlongRoute(
           latitude: map.center.lat,
           longitude: map.center.lng,
         },
-        50 // Same radius as initial setup
+        10
       );
 
       if (progress < 1) {
@@ -466,11 +468,13 @@ export function createGroundCircle(
   const polygon = new google.maps.maps3d.Polygon3DElement({
     outerCoordinates: coordinates,
     altitudeMode: google.maps.maps3d.AltitudeMode.CLAMP_TO_GROUND,
-    fillColor: "#FF0000",
-    fillOpacity: 0.3,
-    strokeColor: "#FF0000",
+    fillColor: "#F97316",
+    // fillOpacity: 0.3,
+    strokeColor: "#FFFFFF",
     strokeWidth: 2,
   });
+
+  polygon.classList.add(TOUR_MARKER);
 
   map.append(polygon);
   return polygon;

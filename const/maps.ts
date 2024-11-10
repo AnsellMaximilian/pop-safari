@@ -36,6 +36,7 @@ export const SAFARI_SPOT = "SAFARI_SPOT";
 export const BUSINESS_REGIS_POLYGON = "BUSINESS_REGIS_POLYGON";
 export const POLYGON_POINT = "POLYGON_POINT";
 export const POLYGON = "POLYGON";
+export const TOUR_MARKER = "TOUR_MARKER";
 
 // polyline
 export const ROUTE_POLYLINE = "ROUTE_POLYLINE";
