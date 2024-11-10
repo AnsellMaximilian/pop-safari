@@ -3,8 +3,10 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { SafariPageContext } from "./SafarisSection";
 
-import { Eye, FastForward, Pause, Play, Trash, X } from "lucide-react";
-import { CollapsibleContext } from "@/components/CollapsibleController";
+import { Eye, FastForward, Info, Pause, Play, Trash, X } from "lucide-react";
+import CollapsibleController, {
+  CollapsibleContext,
+} from "@/components/CollapsibleController";
 import { FlyCameraOptions, LatLng, LatLngAlt } from "@/type/maps";
 import {
   createGroundCircle,
@@ -18,7 +20,7 @@ import { config, databases, storage } from "@/lib/appwrite";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
-import { NEARBY_MARKER, TOUR_MARKER } from "@/const/maps";
+import { NEARBY_MARKER, nearbyItemMarkers, TOUR_MARKER } from "@/const/maps";
 import { cn } from "@/lib/utils";
 import { NearbyItemInfo, NearbyItemType } from "@/type";
 import { v4 } from "uuid";
@@ -36,6 +38,7 @@ export default function SafariTour({
     setSafariViewMode,
     safariSpots,
     routeDecodedPath,
+    safariPolygons,
     setRouteDecodedPath,
   } = useContext(SafariPageContext);
   const { setOpen } = useContext(CollapsibleContext);
@@ -54,11 +57,12 @@ export default function SafariTour({
 
   const [isReverse, setIsReverse] = useState(false);
 
-  const [nearestSpot, setNearestSpot] = useState<NearbyItemInfo | null>(null);
+  const [nearestItem, setNearestItem] = useState<NearbyItemInfo | null>(null);
+  const [showNearbyItem, setShowNearbyItem] = useState(false);
 
-  const updateNearestSpot = (center: LatLng) => {
+  const updateNearestItem = async (center: LatLng) => {
     const maxDistance = 0.005;
-    let closestSpot: NearbyItemInfo | null = null;
+    let closestItem: NearbyItemInfo | null = null;
     let closestDistance = Infinity;
 
     for (const spot of safariSpots) {
@@ -67,7 +71,7 @@ export default function SafariTour({
           Math.pow(center.longitude - spot.lng, 2)
       );
       if (distance < closestDistance && distance <= maxDistance) {
-        closestSpot = {
+        closestItem = {
           id: v4(),
           type: NearbyItemType.SPOT,
           title: spot.name,
@@ -78,21 +82,41 @@ export default function SafariTour({
       }
     }
 
-    if (closestSpot !== nearestSpot) {
-      setNearestSpot(closestSpot);
+    for (const polygon of safariPolygons) {
+      const polygonPoints: LatLng[] = polygon.points.map((p) => JSON.parse(p));
+      const polygonCenter = findCenter(polygonPoints);
+      const distance = Math.sqrt(
+        Math.pow(center.latitude - polygonCenter.latitude, 2) +
+          Math.pow(center.longitude - polygonCenter.longitude, 2)
+      );
+      if (distance < closestDistance && distance <= maxDistance) {
+        closestItem = {
+          id: v4(),
+          type: NearbyItemType.POLYGON,
+          title: polygon.title,
+          description: polygon.description || "No description",
+          latLng: polygonCenter,
+        };
+        closestDistance = distance;
+      }
+    }
+
+    if (closestItem !== nearestItem) {
+      setNearestItem(closestItem);
 
       // Clear previous marker
       removeElementsWithClass(NEARBY_MARKER);
 
       // Add marker to the new nearest spot
-      // if (closestSpot) {
-      //   MarkerUtils.createImageMarker(
-      //     closestSpot.latLng.latitude,
-      //     closestSpot.latLng.longitude,
-      //     "/path/to/marker-image.svg",
-      //     NEARBY_MARKER
-      //   ).then((marker) => map.append(marker));
-      // }
+      if (closestItem) {
+        MarkerUtils.createImageMarker(
+          closestItem.latLng.latitude,
+          closestItem.latLng.longitude,
+          nearbyItemMarkers[closestItem.type],
+          NEARBY_MARKER,
+          true
+        ).then((marker) => map.append(marker));
+      }
     }
   };
 
@@ -175,7 +199,7 @@ export default function SafariTour({
             10
           );
 
-          updateNearestSpot({
+          updateNearestItem({
             latitude: map.center.lat,
             longitude: map.center.lng,
           });
@@ -267,8 +291,14 @@ export default function SafariTour({
         </button>
       </div>
 
-      {nearestSpot && (
-        <NearbyItem item={nearestSpot} onClose={() => setNearestSpot(null)} />
+      {nearestItem && (
+        <CollapsibleController
+          className="absolute right-4 bottom-20 top-32 z-10 overflow-y-hidden overflow-x-hidden"
+          OpenIcon={Info}
+          contents={(setIsOpen) => (
+            <NearbyItem item={nearestItem} onClose={() => setIsOpen(false)} />
+          )}
+        ></CollapsibleController>
       )}
     </>
   );

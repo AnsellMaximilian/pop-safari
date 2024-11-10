@@ -165,7 +165,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
         />
       )}
 
-      {place && (
+      {place && safariViewMode === SafariViewMode.ROUTE && (
         <CollapsibleController
           key={place.id}
           className="absolute right-4 top-44 bottom-4 z-10"

@@ -55,3 +55,9 @@ export const nearbyItemLogo: { [key in NearbyItemType]: LucideIcon } = {
   [NearbyItemType.SPOT]: MapPin,
   [NearbyItemType.POLYGON]: Box,
 };
+
+export const nearbyItemMarkers: { [key in NearbyItemType]: string } = {
+  [NearbyItemType.COMMENT]: "/comment-marker.svg",
+  [NearbyItemType.SPOT]: "/exclamation-marker.svg",
+  [NearbyItemType.POLYGON]: "/box-marker.svg",
+};

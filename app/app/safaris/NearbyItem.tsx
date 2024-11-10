@@ -14,7 +14,7 @@ export default function NearbyItem({
 }) {
   const Logo = nearbyItemLogo[item.type];
   return (
-    <div className="absolute right-4 bottom-20 bg-white top-32 rounded-lg z-10 min-w-[500px]">
+    <div className=" bg-white rounded-lg min-w-[500px] grow">
       <header className="p-4 flex items-center gap-4">
         <Logo />
         <span className="font-bold text-lg">{nearbyItemLabels[item.type]}</span>
