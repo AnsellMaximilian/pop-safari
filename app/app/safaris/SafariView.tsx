@@ -119,13 +119,6 @@ export default function SafariView({ safari }: { safari: Safari }) {
                 <MapPin className="h-4 w-4" />
               </ToggleGroupItem>
               <ToggleGroupItem
-                value={SafariViewMode.SEARCH}
-                aria-label="Toggle Search Mode"
-                className="border-border border"
-              >
-                <Search className="h-4 w-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem
                 value={SafariViewMode.POLYGON}
                 aria-label="Toggle Polygon Mode"
                 className="border-border border"
@@ -211,12 +204,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
       )}
 
       {selectedSafari && safariViewMode === SafariViewMode.TOUR && map && (
-        <CollapsibleController
-          className="absolute left-4 top-44 bottom-4 z-10 items-start overflow-y-hidden"
-          OpenIcon={Info}
-          direction="LEFT"
-          contents={() => <SafariTour />}
-        ></CollapsibleController>
+        <SafariTour map={map} />
       )}
     </>
   );

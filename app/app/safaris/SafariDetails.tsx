@@ -18,6 +18,7 @@ import { findCenter, getElevation, getElevationforPoint } from "@/lib/maps";
 import { config, databases, storage } from "@/lib/appwrite";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export default function SafariDetails({
   safari,
@@ -70,11 +71,14 @@ export default function SafariDetails({
               src={
                 safari.imageId
                   ? storage.getFileView(config.bucketId, safari.imageId)
-                  : defSafari
+                  : defSafari.src
               }
               width={200}
               height={200}
-              className="w-full h-64 object-cover border-border border"
+              className={cn(
+                "w-full h-64 object-cover border-border border",
+                safari.imageId ? "" : "object-contain"
+              )}
               alt="user profile"
             />
           </div>

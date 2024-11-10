@@ -338,6 +338,7 @@ export default function SafariSection() {
 
           map?.append(markerWithCustomSvg);
         });
+        removeElementsWithClass(ROUTE_POLYLINE);
 
         if (safariSpots.length < 2) return;
 
@@ -372,8 +373,6 @@ export default function SafariSection() {
                 longitude: p.lng(),
               }))
             );
-
-            removeElementsWithClass(ROUTE_POLYLINE);
 
             const polyline = new google.maps.maps3d.Polyline3DElement(
               polylineOptions

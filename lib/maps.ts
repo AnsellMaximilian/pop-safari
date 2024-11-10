@@ -357,8 +357,7 @@ export function findCenter(coordinates: LatLng[]): LatLng {
 export async function flyAlongRoute(
   map: google.maps.maps3d.Map3DElement,
   steps: LatLng[],
-  durationPerStep: number = 500,
-  id = "test"
+  durationPerStep: number = 500
 ) {
   removeElementsWithClass(TOUR_MARKER);
   const pointsWithAltitudes = await getAltitudesForPoints(steps);
