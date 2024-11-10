@@ -360,6 +360,13 @@ export async function flyAlongRoute(
 ) {
   const pointsWithAltitudes = await getAltitudesForPoints(steps);
 
+  const initialCenter = {
+    latitude: pointsWithAltitudes[0].latitude,
+    longitude: pointsWithAltitudes[0].longitude,
+    altitude: pointsWithAltitudes[0].altitude,
+  };
+  const groundCircle = createGroundCircle(map, initialCenter, 50);
+
   let currentStep = 0;
 
   function flyToNextStep() {
@@ -397,6 +404,15 @@ export async function flyAlongRoute(
         startHeading + (targetHeading - startHeading) * easedProgress;
       map.range = startRange + (targetRange - startRange) * easedProgress;
 
+      updateGroundCircle(
+        groundCircle,
+        {
+          latitude: map.center.lat,
+          longitude: map.center.lng,
+        },
+        50 // Same radius as initial setup
+      );
+
       if (progress < 1) {
         requestAnimationFrame(animateStep);
       } else {
@@ -426,109 +442,58 @@ export async function getAltitudesForPoints(
   return altitudes;
 }
 
-function calculateHeading(start: LatLng, end: LatLng): number {
-  const dLon = ((end.longitude - start.longitude) * Math.PI) / 180;
-  const lat1 = (start.latitude * Math.PI) / 180;
-  const lat2 = (end.latitude * Math.PI) / 180;
-
-  const y = Math.sin(dLon) * Math.cos(lat2);
-  const x =
-    Math.cos(lat1) * Math.sin(lat2) -
-    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
-}
-
-function getOffsetPosition(
-  start: LatLng,
-  heading: number,
-  distanceMeters: number
-): LatLng {
-  const earthRadius = 6371000;
-  const angularDistance = distanceMeters / earthRadius;
-
-  const lat1 = (start.latitude * Math.PI) / 180;
-  const lng1 = (start.longitude * Math.PI) / 180;
-  const headingRad = (heading * Math.PI) / 180;
-
-  const lat2 = Math.asin(
-    Math.sin(lat1) * Math.cos(angularDistance) +
-      Math.cos(lat1) * Math.sin(angularDistance) * Math.cos(headingRad)
-  );
-  const lng2 =
-    lng1 +
-    Math.atan2(
-      Math.sin(headingRad) * Math.sin(angularDistance) * Math.cos(lat1),
-      Math.cos(angularDistance) - Math.sin(lat1) * Math.sin(lat2)
-    );
-
-  return {
-    latitude: (lat2 * 180) / Math.PI,
-    longitude: (lng2 * 180) / Math.PI,
-  };
-}
-
-export async function animateCameraAlongRouteWithForwardLooking(
+export function createGroundCircle(
   map: google.maps.maps3d.Map3DElement,
-  points: LatLng[],
-  durationPerStep: number = 2000,
-  followDistance: number = 10
+  center: LatLng,
+  radiusMeters: number,
+  numPoints: number = 30
+): google.maps.maps3d.Polyline3DElement {
+  const { latitude, longitude } = center;
+
+  const coordinates = Array.from({ length: numPoints }, (_, i) => {
+    const angle = (i * 360) / numPoints;
+    const radian = (angle * Math.PI) / 180;
+
+    return {
+      lat: latitude + (radiusMeters / 111320) * Math.cos(radian),
+      lng:
+        longitude +
+        (radiusMeters / (111320 * Math.cos(latitude * (Math.PI / 180)))) *
+          Math.sin(radian),
+    };
+  });
+
+  const polyline = new google.maps.maps3d.Polyline3DElement({
+    coordinates,
+    altitudeMode: google.maps.maps3d.AltitudeMode.CLAMP_TO_GROUND,
+    strokeColor: "#FF0000",
+    strokeWidth: 2,
+  });
+
+  map.append(polyline);
+  return polyline;
+}
+
+export function updateGroundCircle(
+  polyline: google.maps.maps3d.Polyline3DElement,
+  center: LatLng,
+  radiusMeters: number,
+  numPoints: number = 30
 ) {
-  const pointsWithAltitudes = await getAltitudesForPoints(points);
+  const { latitude, longitude } = center;
 
-  let currentPoint = 0;
+  const newCoordinates = Array.from({ length: numPoints }, (_, i) => {
+    const angle = (i * 360) / numPoints;
+    const radian = (angle * Math.PI) / 180;
 
-  function flyToNextSegment() {
-    if (currentPoint >= pointsWithAltitudes.length - 1) return;
+    return {
+      lat: latitude + (radiusMeters / 111320) * Math.cos(radian),
+      lng:
+        longitude +
+        (radiusMeters / (111320 * Math.cos(latitude * (Math.PI / 180)))) *
+          Math.sin(radian),
+    };
+  });
 
-    const start = pointsWithAltitudes[currentPoint];
-    const end = pointsWithAltitudes[currentPoint + 1];
-    const heading = calculateHeading(start, end);
-
-    const offsetPosition = getOffsetPosition(start, heading, -followDistance);
-    const targetAltitude = end.altitude;
-
-    const startCenter = map.center!;
-    const startTilt = map.tilt!;
-    const startHeading = map.heading!;
-    const startRange = map.range!;
-    let startAltitude = start.altitude;
-
-    const targetTilt = 45;
-    const targetRange = 500;
-    let startTime: number | null = null;
-
-    function animateStep(time: number) {
-      if (!startTime) startTime = time;
-      const progress = (time - startTime) / durationPerStep;
-      const easedProgress = Math.min(progress, 1);
-
-      const interpolatedAltitude =
-        startAltitude + (targetAltitude - startAltitude) * easedProgress;
-
-      // Update map center and heading to face forward along the segment direction
-      map.center = {
-        lat:
-          startCenter.lat +
-          (offsetPosition.latitude - startCenter.lat) * easedProgress,
-        lng:
-          startCenter.lng +
-          (offsetPosition.longitude - startCenter.lng) * easedProgress,
-        altitude: interpolatedAltitude,
-      };
-      map.tilt = startTilt + (targetTilt - startTilt) * easedProgress;
-      map.heading = startHeading + (heading - startHeading) * easedProgress; // Adjust heading
-      map.range = startRange + (targetRange - startRange) * easedProgress;
-
-      if (progress < 1) {
-        requestAnimationFrame(animateStep);
-      } else {
-        currentPoint++;
-        flyToNextSegment();
-      }
-    }
-
-    requestAnimationFrame(animateStep);
-  }
-
-  flyToNextSegment();
+  polyline.coordinates = newCoordinates;
 }

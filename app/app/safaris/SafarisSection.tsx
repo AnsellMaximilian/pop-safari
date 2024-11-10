@@ -22,7 +22,6 @@ import CreateSafari from "./CreateSafari";
 import { Safari, SafariPolygon, SafariSpot } from "@/type";
 import SafariView from "./SafariView";
 import {
-  animateCameraAlongRouteWithForwardLooking,
   computeRoute,
   createPolygon,
   flyAlongRoute,
