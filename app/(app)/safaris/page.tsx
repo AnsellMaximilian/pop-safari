@@ -226,7 +226,7 @@ export default function Page() {
           const markerWithCustomSvg = await MarkerUtils.createImageMarker(
             latLng.latitude,
             latLng.longitude,
-            "/pop-safari-marker.svg",
+            "/dot-marker.svg",
             ROUTE_MARKER
           );
 

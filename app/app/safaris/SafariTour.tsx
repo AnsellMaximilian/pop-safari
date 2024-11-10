@@ -17,9 +17,12 @@ import {
 import { config, databases, storage } from "@/lib/appwrite";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { removeElementsWithClass } from "@/utils/maps";
-import { TOUR_MARKER } from "@/const/maps";
+import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
+import { NEARBY_MARKER, TOUR_MARKER } from "@/const/maps";
 import { cn } from "@/lib/utils";
+import { NearbyItemInfo, NearbyItemType } from "@/type";
+import { v4 } from "uuid";
+import NearbyItem from "./NearbyItem";
 
 export default function SafariTour({
   map,
@@ -31,6 +34,7 @@ export default function SafariTour({
     setSafariPolygons,
     setSafariSpots,
     setSafariViewMode,
+    safariSpots,
     routeDecodedPath,
     setRouteDecodedPath,
   } = useContext(SafariPageContext);
@@ -50,6 +54,48 @@ export default function SafariTour({
 
   const [isReverse, setIsReverse] = useState(false);
 
+  const [nearestSpot, setNearestSpot] = useState<NearbyItemInfo | null>(null);
+
+  const updateNearestSpot = (center: LatLng) => {
+    const maxDistance = 0.005;
+    let closestSpot: NearbyItemInfo | null = null;
+    let closestDistance = Infinity;
+
+    for (const spot of safariSpots) {
+      const distance = Math.sqrt(
+        Math.pow(center.latitude - spot.lat, 2) +
+          Math.pow(center.longitude - spot.lng, 2)
+      );
+      if (distance < closestDistance && distance <= maxDistance) {
+        closestSpot = {
+          id: v4(),
+          type: NearbyItemType.SPOT,
+          title: spot.name,
+          description: spot.description || "No description",
+          latLng: { latitude: spot.lat, longitude: spot.lng },
+        } as NearbyItemInfo;
+        closestDistance = distance;
+      }
+    }
+
+    if (closestSpot !== nearestSpot) {
+      setNearestSpot(closestSpot);
+
+      // Clear previous marker
+      removeElementsWithClass(NEARBY_MARKER);
+
+      // Add marker to the new nearest spot
+      // if (closestSpot) {
+      //   MarkerUtils.createImageMarker(
+      //     closestSpot.latLng.latitude,
+      //     closestSpot.latLng.longitude,
+      //     "/path/to/marker-image.svg",
+      //     NEARBY_MARKER
+      //   ).then((marker) => map.append(marker));
+      // }
+    }
+  };
+
   useEffect(() => {
     (async () => {
       setPointsWithAltitudes(await getAltitudesForPoints(routeDecodedPath));
@@ -61,8 +107,6 @@ export default function SafariTour({
 
     if (isPlaying && pointsWithAltitudes.length >= 2) {
       const durationPerStep = 500 / speedMultiplier;
-
-      console.log({ durationPerStep });
 
       removeElementsWithClass(TOUR_MARKER);
       const initialCenter = {
@@ -106,7 +150,6 @@ export default function SafariTour({
           if (!startTime) startTime = time;
           const progress = (time - startTime) / durationPerStep;
           const easedProgress = Math.min(progress, 1);
-          console.log("moving time", animationFrameId);
           map.center = {
             lat:
               startCenter.lat +
@@ -132,6 +175,11 @@ export default function SafariTour({
             10
           );
 
+          updateNearestSpot({
+            latitude: map.center.lat,
+            longitude: map.center.lng,
+          });
+
           if (progress < 1) {
             animationFrameId = requestAnimationFrame(animateStep);
           } else {
@@ -148,72 +196,80 @@ export default function SafariTour({
     }
 
     return () => {
-      console.log("STOP ANIMAITION", animationFrameId);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, [isPlaying, pointsWithAltitudes, speedMultiplier, isReverse]);
 
   return (
-    <div className="bg-white p-1 rounded-full bottom-4 left-1/2 -translate-x-1/2 absolute z-10 px-4 flex justify-center gap-4 items-center">
-      <button
-        onClick={() => {
-          setIsPlaying(true);
+    <>
+      <div className="bg-white p-1 rounded-full bottom-4 left-1/2 -translate-x-1/2 absolute z-10 px-4 flex justify-center gap-4 items-center">
+        <button
+          onClick={() => {
+            setIsPlaying(true);
 
-          if (!isReverse) setspeedMultiplier(1);
-          else {
-            setspeedMultiplier((prev) => (prev + 0.5 > 2 ? 1 : prev + 0.5));
-          }
+            if (!isReverse) setspeedMultiplier(1);
+            else {
+              setspeedMultiplier((prev) => (prev + 0.5 > 2 ? 1 : prev + 0.5));
+            }
 
-          setIsReverse(true);
-        }}
-        className={cn(
-          "flex items-center w-8 h-8 rounded-full justify-center gap-1",
-          isReverse
-            ? "bg-primary text-white"
-            : "hover:bg-secondary hover:text-secondary-foreground"
-        )}
-      >
-        {isReverse && (
-          <span className="text-[.5rem] font-bold">x{speedMultiplier}</span>
-        )}
-        <FastForward size={12} className="rotate-180" />
-      </button>
-      <button
-        className={cn(
-          "p-2 rounded-full",
-          !isReverse && speedMultiplier <= 1
-            ? "bg-primary text-white "
-            : "hover:bg-secondary "
-        )}
-        onClick={() => {
-          setIsPlaying((prev) => !prev);
-          if (currentStepIndex === 0) setIsReverse(false);
-        }}
-      >
-        {isPlaying ? <Pause /> : <Play />}
-      </button>
+            setIsReverse(true);
+          }}
+          className={cn(
+            "flex items-center w-8 h-8 rounded-full justify-center gap-1",
+            isReverse
+              ? "bg-primary text-white"
+              : "hover:bg-secondary hover:text-secondary-foreground"
+          )}
+        >
+          {isReverse && (
+            <span className="text-[.5rem] font-bold">x{speedMultiplier}</span>
+          )}
+          <FastForward size={12} className="rotate-180" />
+        </button>
+        <button
+          className={cn(
+            "p-2 rounded-full",
+            !isReverse && speedMultiplier <= 1
+              ? "bg-primary text-white "
+              : "hover:bg-secondary "
+          )}
+          onClick={() => {
+            setIsPlaying((prev) => !prev);
+            if (currentStepIndex === 0) setIsReverse(false);
 
-      <button
-        onClick={() => {
-          setIsPlaying(true);
-          if (isReverse) setspeedMultiplier(1.5);
-          else {
-            setspeedMultiplier((prev) => (prev + 0.5 > 2 ? 1 : prev + 0.5));
-          }
-          setIsReverse(false);
-        }}
-        className={cn(
-          "flex items-center w-8 h-8 rounded-full justify-center gap-1",
-          speedMultiplier > 1 && !isReverse
-            ? "bg-primary text-white"
-            : "hover:bg-secondary hover:text-secondary-foreground"
-        )}
-      >
-        <FastForward size={12} />
-        {speedMultiplier > 1 && !isReverse && (
-          <span className="text-[.5rem] font-bold">x{speedMultiplier}</span>
-        )}
-      </button>
-    </div>
+            if (currentStepIndex >= pointsWithAltitudes.length - 1)
+              setCurrentStepIndex(0);
+          }}
+        >
+          {isPlaying ? <Pause /> : <Play />}
+        </button>
+
+        <button
+          onClick={() => {
+            setIsPlaying(true);
+            if (isReverse) setspeedMultiplier(1.5);
+            else {
+              setspeedMultiplier((prev) => (prev + 0.5 > 2 ? 1 : prev + 0.5));
+            }
+            setIsReverse(false);
+          }}
+          className={cn(
+            "flex items-center w-8 h-8 rounded-full justify-center gap-1",
+            speedMultiplier > 1 && !isReverse
+              ? "bg-primary text-white"
+              : "hover:bg-secondary hover:text-secondary-foreground"
+          )}
+        >
+          <FastForward size={12} />
+          {speedMultiplier > 1 && !isReverse && (
+            <span className="text-[.5rem] font-bold">x{speedMultiplier}</span>
+          )}
+        </button>
+      </div>
+
+      {nearestSpot && (
+        <NearbyItem item={nearestSpot} onClose={() => setNearestSpot(null)} />
+      )}
+    </>
   );
 }

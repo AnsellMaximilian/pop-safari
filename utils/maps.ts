@@ -37,19 +37,29 @@ export class MarkerUtils {
     lat: number,
     lng: number,
     imageUrl: string,
-    className: string
+    className: string,
+    extruded: boolean = false
   ) {
     // @ts-ignore
-    const { Marker3DElement } = (await google.maps.importLibrary(
+    const { Marker3DElement, AltitudeMode } = (await google.maps.importLibrary(
       "maps3d"
     )) as google.maps.Maps3DLibrary;
     const img = document.createElement("img");
 
     img.src = imageUrl;
 
+    const extraOptions = extruded
+      ? {
+          position: { lat, lng, altitude: 100 },
+          extruded: true,
+          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+        }
+      : {};
+
     const marker = new Marker3DElement({
       position: { lat, lng },
       collisionBehavior: google.maps.CollisionBehavior.REQUIRED,
+      ...extraOptions,
     });
 
     const template = document.createElement("template");

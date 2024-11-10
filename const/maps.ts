@@ -1,3 +1,6 @@
+import { NearbyItemType, LucideIcon } from "@/type";
+import { Box, MapPin, MessageCircle } from "lucide-react";
+
 export const polygonOptions: google.maps.maps3d.Polygon3DElementOptions = {
   strokeColor: "#F97316",
   strokeWidth: 4,
@@ -40,3 +43,15 @@ export const TOUR_MARKER = "TOUR_MARKER";
 
 // polyline
 export const ROUTE_POLYLINE = "ROUTE_POLYLINE";
+
+export const nearbyItemLabels: { [key in NearbyItemType]: string } = {
+  [NearbyItemType.COMMENT]: "Nearby Comment",
+  [NearbyItemType.SPOT]: "Nearby Spot",
+  [NearbyItemType.POLYGON]: "Nearby Polygon",
+};
+
+export const nearbyItemLogo: { [key in NearbyItemType]: LucideIcon } = {
+  [NearbyItemType.COMMENT]: MessageCircle,
+  [NearbyItemType.SPOT]: MapPin,
+  [NearbyItemType.POLYGON]: Box,
+};

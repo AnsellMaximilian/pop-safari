@@ -1,6 +1,7 @@
 import { Models } from "appwrite";
 import { LucideProps } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
+import { LatLng } from "./maps";
 
 export type ApiResponse<T> = {
   success: boolean;
@@ -83,3 +84,18 @@ export type SafariPolygon = Models.Document & {
 export type LucideIcon = React.ForwardRefExoticComponent<
   Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
 >;
+
+export interface NearbyItemInfo {
+  id: string;
+  type: NearbyItemType;
+  title: string;
+  description: string;
+  latLng: LatLng;
+  placeId?: string;
+}
+
+export enum NearbyItemType {
+  COMMENT = "COMMENT",
+  SPOT = "SPOT",
+  POLYGON = "POLYGON",
+}
