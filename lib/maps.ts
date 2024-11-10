@@ -447,7 +447,7 @@ export function createGroundCircle(
   center: LatLng,
   radiusMeters: number,
   numPoints: number = 30
-): google.maps.maps3d.Polyline3DElement {
+): google.maps.maps3d.Polygon3DElement {
   const { latitude, longitude } = center;
 
   const coordinates = Array.from({ length: numPoints }, (_, i) => {
@@ -463,19 +463,21 @@ export function createGroundCircle(
     };
   });
 
-  const polyline = new google.maps.maps3d.Polyline3DElement({
-    coordinates,
+  const polygon = new google.maps.maps3d.Polygon3DElement({
+    outerCoordinates: coordinates,
     altitudeMode: google.maps.maps3d.AltitudeMode.CLAMP_TO_GROUND,
+    fillColor: "#FF0000",
+    fillOpacity: 0.3,
     strokeColor: "#FF0000",
     strokeWidth: 2,
   });
 
-  map.append(polyline);
-  return polyline;
+  map.append(polygon);
+  return polygon;
 }
 
 export function updateGroundCircle(
-  polyline: google.maps.maps3d.Polyline3DElement,
+  polygon: google.maps.maps3d.Polygon3DElement,
   center: LatLng,
   radiusMeters: number,
   numPoints: number = 30
@@ -495,5 +497,5 @@ export function updateGroundCircle(
     };
   });
 
-  polyline.coordinates = newCoordinates;
+  polygon.outerCoordinates = newCoordinates;
 }
