@@ -99,3 +99,13 @@ export enum NearbyItemType {
   SPOT = "SPOT",
   POLYGON = "POLYGON",
 }
+
+export type Comment = Models.Document & {
+  content: string;
+  lat: number;
+  lng: number;
+  username: string;
+  name: string;
+  userId: string;
+  safariId: string;
+};
