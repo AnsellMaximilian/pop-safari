@@ -108,6 +108,9 @@ export interface SafariPageContextData {
 
   safariPolygons: SafariPolygon[];
   setSafariPolygons: SetState<SafariPolygon[]>;
+
+  routeDecodedPath: LatLng[];
+  setRouteDecodedPath: SetState<LatLng[]>;
 }
 
 export const SafariPageContext = createContext<SafariPageContextData>({
@@ -144,6 +147,9 @@ export const SafariPageContext = createContext<SafariPageContextData>({
 
   safariPolygons: [],
   setSafariPolygons: () => {},
+
+  routeDecodedPath: [],
+  setRouteDecodedPath: () => {},
 });
 
 export default function SafariSection() {
@@ -169,6 +175,7 @@ export default function SafariSection() {
 
   const [safariSpots, setSafariSpots] = useState<SafariSpot[]>([]);
   const [currentPoint, setCurrentPoint] = useState<LatLng | null>(null);
+  const [routeDecodedPath, setRouteDecodedPath] = useState<LatLng[]>([]);
 
   // polygons
   const [polygonPoints, setPolygonPoints] = useState<LatLng[]>([]);
@@ -359,15 +366,12 @@ export default function SafariSection() {
               res.routes[0].polyline.encodedPolyline
             );
 
-            setTimeout(() => {
-              flyAlongRoute(
-                map,
-                decodedPath.map((p) => ({
-                  latitude: p.lat(),
-                  longitude: p.lng(),
-                }))
-              );
-            }, 5000);
+            setRouteDecodedPath(
+              decodedPath.map((p) => ({
+                latitude: p.lat(),
+                longitude: p.lng(),
+              }))
+            );
 
             removeElementsWithClass(ROUTE_POLYLINE);
 
@@ -440,6 +444,8 @@ export default function SafariSection() {
         setCurrentPolygonPoints,
         safariPolygons,
         setSafariPolygons,
+        routeDecodedPath,
+        setRouteDecodedPath,
       }}
     >
       <>

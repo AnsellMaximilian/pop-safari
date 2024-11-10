@@ -94,7 +94,7 @@ export default function SafariDetails({
                 });
               }}
             >
-              "Spot Mode"
+              &quot;Spot Mode&quot;
             </span>{" "}
             to create Safari Spots.
           </div>
@@ -209,7 +209,7 @@ export default function SafariDetails({
                 });
               }}
             >
-              "Polygon Mode"
+              &quot;Polygon Mode&quot;
             </span>{" "}
             to create Polygons.
           </div>

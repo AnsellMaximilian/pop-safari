@@ -35,12 +35,12 @@ import SafariDetails from "./SafariDetails";
 import { truncateString } from "@/utils/common";
 import { X } from "lucide-react";
 import { useUser } from "@/contexts/user/UserContext";
+import SafariTour from "./SafariTour";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
     setPageMode,
     setSelectedSafari,
-    points,
     map,
     selectedSafari,
     safariViewMode,
@@ -210,45 +210,14 @@ export default function SafariView({ safari }: { safari: Safari }) {
         />
       )}
 
-      {/* <div className="absolute top-44 left-4 bg-white rounded-md shadow-md z-10 p-4">
-        <Button
-          disabled={points.length < 2}
-          onClick={async () => {
-            const res = await computeRoute(
-              getBaseRouteRequest(points[0], points[1])
-            );
-
-            loader.load().then(async () => {
-              const { encoding } = (await google.maps.importLibrary(
-                "geometry"
-              )) as google.maps.GeometryLibrary;
-
-              const decodedPath = encoding.decodePath(
-                res.routes[0].polyline.encodedPolyline
-              );
-              console.log(decodedPath);
-
-              removeElementsWithClass(ROUTE_POLYLINE);
-
-              const polyline = new google.maps.maps3d.Polyline3DElement(
-                polylineOptions
-              );
-
-              polyline.coordinates = decodedPath.map((p) => ({
-                lat: p.lat(),
-                lng: p.lng(),
-              }));
-              polyline.classList.add(ROUTE_POLYLINE);
-
-              map?.append(polyline);
-            });
-
-            console.log(res);
-          }}
-        >
-          Route
-        </Button>
-      </div> */}
+      {selectedSafari && safariViewMode === SafariViewMode.TOUR && map && (
+        <CollapsibleController
+          className="absolute left-4 top-44 bottom-4 z-10 items-start overflow-y-hidden"
+          OpenIcon={Info}
+          direction="LEFT"
+          contents={() => <SafariTour />}
+        ></CollapsibleController>
+      )}
     </>
   );
 }
