@@ -32,6 +32,7 @@ export const NEARBY_MARKER = "NEARBY_MARKER";
 
 export const GENERAL_MARKER_ONE = "GENERAL_MARKER_ONE";
 export const ROUTE_MARKER = "ROUTE_MARKER";
+export const COMMENT_MARKER = "COMMENT_MARKER";
 
 export const SAFARI_SPOT = "SAFARI_SPOT";
 

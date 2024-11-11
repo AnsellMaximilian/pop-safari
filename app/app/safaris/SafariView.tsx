@@ -20,6 +20,8 @@ import {
   Home,
   Info,
   Eye,
+  Speech,
+  MessageSquare,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -36,6 +38,7 @@ import { truncateString } from "@/utils/common";
 import { X } from "lucide-react";
 import { useUser } from "@/contexts/user/UserContext";
 import SafariTour from "./SafariTour";
+import SafariComments from "./SafariComments";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -134,6 +137,13 @@ export default function SafariView({ safari }: { safari: Safari }) {
           >
             <Eye className="h-4 w-4" />
           </ToggleGroupItem>
+          <ToggleGroupItem
+            value={SafariViewMode.COMMENTS}
+            aria-label="Toggle Comments Mode"
+            className="border-border border"
+          >
+            <MessageSquare className="h-4 w-4" />
+          </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -205,6 +215,14 @@ export default function SafariView({ safari }: { safari: Safari }) {
 
       {selectedSafari && safariViewMode === SafariViewMode.TOUR && map && (
         <SafariTour map={map} />
+      )}
+
+      {selectedSafari && safariViewMode === SafariViewMode.COMMENTS && (
+        <CollapsibleController
+          className="absolute right-4 top-44 bottom-4 z-10 items-start overflow-y-hidden"
+          OpenIcon={MessageSquare}
+          contents={(setOpen) => <SafariComments />}
+        ></CollapsibleController>
       )}
     </>
   );

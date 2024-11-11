@@ -19,7 +19,7 @@ import emptySafari from "@/assets/empty-safari.svg";
 import { useData } from "@/contexts/data/DataContext";
 import SafariList from "./SafariList";
 import CreateSafari from "./CreateSafari";
-import { Safari, SafariPolygon, SafariSpot } from "@/type";
+import { Comment, Safari, SafariPolygon, SafariSpot } from "@/type";
 import SafariView from "./SafariView";
 import {
   computeRoute,
@@ -34,6 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { FlyCameraOptions, LatLng, Map3dEvent, PlaceData } from "@/type/maps";
 import {
+  COMMENT_MARKER,
   POLYGON,
   POLYGON_POINT,
   polylineOptions,
@@ -62,6 +63,7 @@ export enum SafariViewMode {
   POLYGON = "POLYGON",
   HOME = "HOME",
   TOUR = "TOUR",
+  COMMENTS = "COMMENTS",
 }
 
 export enum SafariPageMode {
@@ -111,6 +113,12 @@ export interface SafariPageContextData {
 
   routeDecodedPath: LatLng[];
   setRouteDecodedPath: SetState<LatLng[]>;
+
+  comments: Comment[];
+  setComments: SetState<Comment[]>;
+
+  commentPoint: null | LatLng;
+  setCommentPoint: SetState<null | LatLng>;
 }
 
 export const SafariPageContext = createContext<SafariPageContextData>({
@@ -150,6 +158,12 @@ export const SafariPageContext = createContext<SafariPageContextData>({
 
   routeDecodedPath: [],
   setRouteDecodedPath: () => {},
+
+  comments: [],
+  setComments: () => {},
+
+  commentPoint: null,
+  setCommentPoint: () => {},
 });
 
 export default function SafariSection() {
@@ -187,6 +201,10 @@ export default function SafariSection() {
 
   const [safariPolygons, setSafariPolygons] = useState<SafariPolygon[]>([]);
 
+  //comments
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentPoint, setCommentPoint] = useState<LatLng | null>(null);
+
   useEffect(() => {
     let autocompleteListener: google.maps.MapsEventListener | null = null;
 
@@ -205,6 +223,9 @@ export default function SafariSection() {
   useEffect(() => {
     if (safariViewMode !== SafariViewMode.ROUTE)
       removeElementsWithClass(ROUTE_MARKER);
+
+    if (safariViewMode !== SafariViewMode.COMMENTS)
+      removeElementsWithClass(COMMENT_MARKER);
 
     const handleMapClick: EventListenerOrEventListenerObject = (basicE) => {
       loader.load().then(async () => {
@@ -257,6 +278,20 @@ export default function SafariSection() {
 
             return newVal;
           });
+        } else if (safariViewMode === SafariViewMode.COMMENTS) {
+          setCommentPoint(latLng);
+
+          removeElementsWithClass(COMMENT_MARKER);
+
+          const markerWithCustomSvg = await MarkerUtils.createImageMarker(
+            latLng.latitude,
+            latLng.longitude,
+            "/comment-marker.svg",
+            COMMENT_MARKER,
+            true
+          );
+
+          map?.append(markerWithCustomSvg);
         }
       });
     };
@@ -445,6 +480,10 @@ export default function SafariSection() {
         setSafariPolygons,
         routeDecodedPath,
         setRouteDecodedPath,
+        comments,
+        setComments,
+        commentPoint,
+        setCommentPoint,
       }}
     >
       <>
