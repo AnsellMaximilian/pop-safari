@@ -332,6 +332,15 @@ export default function SafariSection() {
         ).documents as SafariPolygon[];
         setSafariPolygons(polygons);
 
+        databases
+          .listDocuments(config.dbId, config.commentCollectionId, [
+            Query.equal("safariId", selectedSafari.$id),
+          ])
+          .then((docs) => {
+            const comments = docs.documents as Comment[];
+            setComments(comments);
+          });
+
         if (spots.length > 0) {
           if (map) {
             const s = spots[0];

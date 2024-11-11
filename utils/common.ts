@@ -68,3 +68,17 @@ export function hexToRGBA(hex: string, alpha = 0.1) {
 
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+export function getErrorMessage(error: any) {
+  let msg = "Something went wrong";
+
+  if (error instanceof Error) msg = error.message;
+
+  return msg;
+}
+
+export function timeSince(now: string): string {
+  const nowDate = new Date(now);
+
+  return formatDistanceToNow(nowDate, { addSuffix: true });
+}

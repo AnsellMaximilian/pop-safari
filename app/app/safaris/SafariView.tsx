@@ -39,6 +39,7 @@ import { X } from "lucide-react";
 import { useUser } from "@/contexts/user/UserContext";
 import SafariTour from "./SafariTour";
 import SafariComments from "./SafariComments";
+import CommentForm from "./CommentForm";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -54,6 +55,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
     currentPoint,
     safariPolygons,
     safariSpots,
+    commentPoint,
   } = useContext(SafariPageContext);
 
   const { currentUser } = useUser();
@@ -219,9 +221,11 @@ export default function SafariView({ safari }: { safari: Safari }) {
 
       {selectedSafari && safariViewMode === SafariViewMode.COMMENTS && (
         <CollapsibleController
-          className="absolute right-4 top-44 bottom-4 z-10 items-start overflow-y-hidden"
+          className="absolute right-4 top-44 bottom-4 z-10 items-start"
           OpenIcon={MessageSquare}
-          contents={(setOpen) => <SafariComments />}
+          contents={(setOpen) => (
+            <SafariComments close={() => setOpen(false)} />
+          )}
         ></CollapsibleController>
       )}
     </>
