@@ -40,6 +40,7 @@ import { useUser } from "@/contexts/user/UserContext";
 import SafariTour from "./SafariTour";
 import SafariComments from "./SafariComments";
 import CommentForm from "./CommentForm";
+import SelectedItem from "./SelectedItem";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -56,6 +57,8 @@ export default function SafariView({ safari }: { safari: Safari }) {
     safariPolygons,
     safariSpots,
     commentPoint,
+    selectedPolygon,
+    selectedSpot,
   } = useContext(SafariPageContext);
 
   const { currentUser } = useUser();
@@ -163,6 +166,24 @@ export default function SafariView({ safari }: { safari: Safari }) {
           )}
         ></CollapsibleController>
       )}
+
+      {selectedSafari &&
+        safariViewMode === SafariViewMode.HOME &&
+        (selectedPolygon || selectedSpot) && (
+          <CollapsibleController
+            className="absolute right-4 top-44 bottom-4 z-10 items-start overflow-y-hidden"
+            OpenIcon={Info}
+            direction="RIGHT"
+            contents={(setOpen) => (
+              <SelectedItem
+                onClose={() => setOpen(false)}
+                polygon={selectedPolygon}
+                spot={selectedSpot}
+                label={selectedPolygon ? "Polygon" : "Safari Spot"}
+              />
+            )}
+          ></CollapsibleController>
+        )}
 
       {currentPoint && safariViewMode === SafariViewMode.ROUTE && (
         <SafariCreateForm />

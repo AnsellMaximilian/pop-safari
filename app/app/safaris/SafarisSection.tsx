@@ -119,6 +119,12 @@ export interface SafariPageContextData {
 
   commentPoint: null | LatLng;
   setCommentPoint: SetState<null | LatLng>;
+
+  selectedPolygon: null | SafariPolygon;
+  setSelectedPolygon: SetState<null | SafariPolygon>;
+
+  selectedSpot: null | SafariSpot;
+  setSelectedSpot: SetState<null | SafariSpot>;
 }
 
 export const SafariPageContext = createContext<SafariPageContextData>({
@@ -164,6 +170,12 @@ export const SafariPageContext = createContext<SafariPageContextData>({
 
   commentPoint: null,
   setCommentPoint: () => {},
+
+  selectedPolygon: null,
+  setSelectedPolygon: () => {},
+
+  selectedSpot: null,
+  setSelectedSpot: () => {},
 });
 
 export default function SafariSection() {
@@ -205,6 +217,11 @@ export default function SafariSection() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentPoint, setCommentPoint] = useState<LatLng | null>(null);
 
+  const [selectedPolygon, setSelectedPolygon] = useState<null | SafariPolygon>(
+    null
+  );
+  const [selectedSpot, setSelectedSpot] = useState<null | SafariSpot>(null);
+
   useEffect(() => {
     let autocompleteListener: google.maps.MapsEventListener | null = null;
 
@@ -226,6 +243,11 @@ export default function SafariSection() {
 
     if (safariViewMode !== SafariViewMode.COMMENTS)
       removeElementsWithClass(COMMENT_MARKER);
+
+    if (safariViewMode !== SafariViewMode.HOME) {
+      setSelectedPolygon(null);
+      setSelectedSpot(null);
+    }
 
     const handleMapClick: EventListenerOrEventListenerObject = (basicE) => {
       loader.load().then(async () => {
@@ -382,6 +404,8 @@ export default function SafariSection() {
             (event) => {
               event.stopPropagation();
               setSafariViewMode(SafariViewMode.HOME);
+              setSelectedSpot(s);
+              setSelectedPolygon(null);
             }
           );
 
@@ -498,6 +522,10 @@ export default function SafariSection() {
         setComments,
         commentPoint,
         setCommentPoint,
+        selectedPolygon,
+        setSelectedPolygon,
+        selectedSpot,
+        setSelectedSpot,
       }}
     >
       <>

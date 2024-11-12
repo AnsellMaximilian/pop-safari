@@ -35,6 +35,8 @@ export default function SafariDetails({
     setSafariPolygons,
     setSafariSpots,
     setSafariViewMode,
+    setSelectedPolygon,
+    setSelectedSpot,
   } = useContext(SafariPageContext);
   const { setOpen } = useContext(CollapsibleContext);
   const { toast } = useToast();
@@ -119,6 +121,8 @@ export default function SafariDetails({
                         size="icon"
                         onClick={async () => {
                           if (map) {
+                            setSelectedSpot(s);
+                            setSelectedPolygon(null);
                             const opts: FlyCameraOptions = {
                               endCamera: {
                                 center: {
@@ -238,6 +242,8 @@ export default function SafariDetails({
                           size="icon"
                           onClick={async () => {
                             if (map) {
+                              setSelectedSpot(null);
+                              setSelectedPolygon(pol);
                               const opts: FlyCameraOptions = {
                                 endCamera: {
                                   center: {
