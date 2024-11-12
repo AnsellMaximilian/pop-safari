@@ -69,6 +69,8 @@ export type SafariSpot = Models.Document & {
   lng: number;
   placeId?: string;
   order: number;
+  startTime?: string;
+  endTime?: string;
 };
 
 export type SafariPolygon = Models.Document & {

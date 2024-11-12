@@ -90,6 +90,9 @@ export default function SafariCreateForm() {
                   safariSpots.length - 1
                 ].order + 1
               : 1,
+
+          startTime: activityStart ? new Date(activityStart) : null,
+          endTime: activityEnd ? new Date(activityEnd) : null,
         },
         [
           Permission.update(Role.user(currentUser.$id)),

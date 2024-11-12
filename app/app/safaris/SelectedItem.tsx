@@ -5,6 +5,7 @@ import { nearbyItemLabels, nearbyItemLogo } from "@/const/maps";
 import { getPlaceDetails } from "@/lib/maps";
 import { NearbyItemInfo, SafariPolygon, SafariSpot } from "@/type";
 import { PlaceData } from "@/type/maps";
+import { format } from "date-fns";
 import { Info, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -28,6 +29,8 @@ export default function SelectedItem({
         const placeDetails = await getPlaceDetails(spot.placeId);
 
         setPlace(placeDetails);
+      } else {
+        setPlace(null);
       }
     })();
   }, [spot]);
@@ -69,6 +72,27 @@ export default function SelectedItem({
               <PlaceDisplay place={place} />
             </div>
           </>
+        )}
+
+        {spot && (
+          <div className="flex items-center gap-4">
+            <div className="grow border-border border rounded-md p-2">
+              <div className="text-xs font-bold">Start Time</div>
+              <div className="text-sm">
+                {spot.startTime
+                  ? format(new Date(spot.startTime), "MMMM do 'at' h:mm a")
+                  : "Not Set"}
+              </div>
+            </div>
+            <div className="grow border-border border rounded-md p-2">
+              <div className="text-xs font-bold">EndTime</div>
+              <div className="text-sm">
+                {spot.endTime
+                  ? format(new Date(spot.endTime), "MMMM do 'at' h:mm a")
+                  : "Not Set"}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

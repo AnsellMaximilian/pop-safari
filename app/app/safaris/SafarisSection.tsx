@@ -271,10 +271,13 @@ export default function SafariSection() {
         if (safariViewMode === SafariViewMode.ROUTE) {
           setCurrentPoint(latLng);
           if (e.placeId) {
-            console.log(e.placeId);
             const placeDetails = await getPlaceDetails(e.placeId);
 
             setPlace(placeDetails);
+            setExtraSpotData((prev) => ({
+              ...prev,
+              placeId: placeDetails ? placeDetails.id : undefined,
+            }));
           } else {
             setPlace(null);
             setExtraSpotData((prev) => ({ ...prev, placeId: undefined }));
@@ -398,9 +401,10 @@ export default function SafariSection() {
 
   useEffect(() => {
     (async () => {
+      removeElementsWithClass(SAFARI_SPOT);
+
       if (map && safariSpots.length > 0) {
         // markers
-        removeElementsWithClass(SAFARI_SPOT);
         safariSpots.forEach(async (s) => {
           const markerWithCustomSvg = await MarkerUtils.createImageMarker(
             s.lat,
