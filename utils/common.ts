@@ -93,3 +93,28 @@ export function getInitials(name?: string): string {
     return (words[0][0] + words[1][0]).toUpperCase();
   }
 }
+
+export function formatToTitleCase(str: string): string {
+  return str
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+export function formatOpeningHours(str: string): {
+  day: string;
+  period: string;
+} {
+  const [day, ...periodParts] = str.split(":");
+
+  if (!day || periodParts.length === 0)
+    return {
+      day: "Unknown",
+      period: "Unknown",
+    };
+
+  const period = periodParts.join(":").trim().replace(/\s+/g, " ");
+
+  return { day: day.trim(), period };
+}
