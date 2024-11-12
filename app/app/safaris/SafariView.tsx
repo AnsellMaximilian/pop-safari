@@ -183,7 +183,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
           className="absolute right-4 top-44 bottom-4 z-10"
           OpenIcon={MapPinHouse}
           contents={(setOpen) => (
-            <div className="rounded-md shadow-md bg-white p-4 max-w-[500px] grow">
+            <div className="rounded-md shadow-md bg-white p-4 w-[500px] grow">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-semibold">Found Place</h2>
                 <Button

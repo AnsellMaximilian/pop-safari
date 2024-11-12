@@ -3,28 +3,33 @@ import React from "react";
 import { Badge } from "./ui/badge";
 import { cn } from "@/lib/utils";
 import Rating from "./Rating";
+import { truncateString } from "@/utils/common";
 
 export default function PlaceDisplay({ place }: { place: PlaceData }) {
   return (
     <div>
       <div className="flex gap-4">
-        <div>
-          <div className="text-sm tracking-tight font-semibold">
-            {place.displayName?.text}
+        <div className="grow">
+          <div className="flex justify-between items-end gap-4">
+            <div className="text-sm tracking-tight font-semibold">
+              {truncateString(place.displayName?.text || "No name", 30)}
+            </div>
+            <div className="flex justify-end mt-2">
+              <Badge
+                className={cn(
+                  place.currentOpeningHours?.openNow ? "bg-green-400" : ""
+                )}
+                variant={
+                  place.currentOpeningHours?.openNow ? "default" : "destructive"
+                }
+              >
+                {place.currentOpeningHours?.openNow ? "Open" : "Closed"}
+              </Badge>
+            </div>
           </div>
+
           <div className="text-xs">{place.formattedAddress}</div>
-          <div className="flex justify-end mt-2">
-            <Badge
-              className={cn(
-                place.currentOpeningHours?.openNow ? "bg-green-400" : ""
-              )}
-              variant={
-                place.currentOpeningHours?.openNow ? "default" : "destructive"
-              }
-            >
-              {place.currentOpeningHours?.openNow ? "Open" : "Closed"}
-            </Badge>
-          </div>
+
           {place.rating && (
             <div className="mt-2">
               <Rating rating={place.rating} showPoints />

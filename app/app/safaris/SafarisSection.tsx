@@ -377,7 +377,12 @@ export default function SafariSection() {
             s.lat,
             s.lng,
             "/dot-marker.svg",
-            SAFARI_SPOT
+            SAFARI_SPOT,
+            false,
+            (event) => {
+              event.stopPropagation();
+              setSafariViewMode(SafariViewMode.HOME);
+            }
           );
 
           map?.append(markerWithCustomSvg);

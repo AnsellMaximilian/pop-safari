@@ -1,3 +1,5 @@
+import { Map3dEvent } from "@/type/maps";
+
 export function removeElementsWithClass(className: string) {
   const elements = document.getElementsByClassName(`${className}`);
 
@@ -38,12 +40,12 @@ export class MarkerUtils {
     lng: number,
     imageUrl: string,
     className: string,
-    extruded: boolean = false
+    extruded: boolean = false,
+    onClick?: (event: Map3dEvent) => void
   ) {
     // @ts-ignore
-    const { Marker3DElement, AltitudeMode } = (await google.maps.importLibrary(
-      "maps3d"
-    )) as google.maps.Maps3DLibrary;
+    const { Marker3DElement, AltitudeMode, Marker3DInteractiveElement } =
+      (await google.maps.importLibrary("maps3d")) as google.maps.Maps3DLibrary;
     const img = document.createElement("img");
 
     img.src = imageUrl;
@@ -56,11 +58,17 @@ export class MarkerUtils {
         }
       : {};
 
-    const marker = new Marker3DElement({
+    const marker = new Marker3DInteractiveElement({
       position: { lat, lng },
       collisionBehavior: google.maps.CollisionBehavior.REQUIRED,
       ...extraOptions,
     });
+
+    if (onClick) {
+      marker.addEventListener("gmp-click", (event: Map3dEvent) => {
+        onClick(event);
+      });
+    }
 
     const template = document.createElement("template");
     template.content.append(img);
