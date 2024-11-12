@@ -171,7 +171,7 @@ export default function SafariView({ safari }: { safari: Safari }) {
         safariViewMode === SafariViewMode.HOME &&
         (selectedPolygon || selectedSpot) && (
           <CollapsibleController
-            className="absolute right-4 top-44 bottom-4 z-10 items-start overflow-y-hidden"
+            className="absolute right-4 top-44 bottom-4 z-10 items-start overflow-y-hidden overflow-x-hidden"
             OpenIcon={Info}
             direction="RIGHT"
             contents={(setOpen) => (

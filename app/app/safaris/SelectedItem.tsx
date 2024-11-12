@@ -39,7 +39,7 @@ export default function SelectedItem({
   const title = polygon ? polygon.title : spot!.name;
   const description = polygon ? polygon.description : spot?.description;
   return (
-    <div className=" bg-white rounded-lg min-w-[500px] grow">
+    <div className=" bg-white rounded-lg w-[500px] grow overflow-y-auto">
       <header className="p-4 flex items-center gap-4">
         <Info />
         <span className="font-bold text-lg">{label}</span>
@@ -56,15 +56,21 @@ export default function SelectedItem({
         </Button>
       </header>
       <Separator />
-      <div className="p-4">
-        <h2 className="text-lg font-bold">{title}</h2>
-        <p>{description || "No description available"}</p>
-      </div>
-      {place && (
-        <div className="p-4">
-          <PlaceDisplay place={place} />
+      <div className="p-4 space-y-4">
+        <div className="">
+          <h2 className="text-lg font-bold">{title}</h2>
+          <p>{description || "No description available"}</p>
         </div>
-      )}
+        {place && (
+          <>
+            <Separator />
+            <div className="">
+              <h3 className="font-semibold">Associated Place</h3>
+              <PlaceDisplay place={place} />
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
