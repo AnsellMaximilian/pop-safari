@@ -8,15 +8,19 @@ import SafariStatusBadge from "./SafariStatusBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
+import { useUser } from "@/contexts/user/UserContext";
 
 export default function SafariCard({
   safari,
   loading,
+  handleDelete,
 }: {
   safari: Safari;
   loading?: boolean;
+  handleDelete?: () => Promise<void> | void;
 }) {
   const { setPageMode, setSelectedSafari } = useContext(SafariPageContext);
+  const { currentUser } = useUser();
 
   return loading ? (
     <Skeleton className="h-36 rounded-md" />
@@ -38,11 +42,20 @@ export default function SafariCard({
           ? truncateString(safari.description, 25)
           : "No description."}
       </p>
-      <div className="ml-auto flex justify-end mt-auto">
-        <Button variant="destructive" size="icon">
-          <Trash />
-        </Button>
-      </div>
+      {currentUser?.$id === safari.userId && (
+        <div className="ml-auto flex justify-end mt-auto">
+          <Button
+            variant="destructive"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (handleDelete) handleDelete();
+            }}
+          >
+            <Trash />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
