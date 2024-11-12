@@ -110,15 +110,15 @@ export default function SafariView({ safari }: { safari: Safari }) {
             });
           }}
         >
+          <ToggleGroupItem
+            value={SafariViewMode.HOME}
+            aria-label="Toggle Home Mode"
+            className="border-border border"
+          >
+            <Home className="h-4 w-4" />
+          </ToggleGroupItem>
           {currentUser?.$id === selectedSafari?.userId && (
             <>
-              <ToggleGroupItem
-                value={SafariViewMode.HOME}
-                aria-label="Toggle Home Mode"
-                className="border-border border"
-              >
-                <Home className="h-4 w-4" />
-              </ToggleGroupItem>
               <ToggleGroupItem
                 value={SafariViewMode.ROUTE}
                 aria-label="Toggle Route Mode"

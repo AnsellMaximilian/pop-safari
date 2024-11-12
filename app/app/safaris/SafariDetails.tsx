@@ -19,6 +19,7 @@ import { config, databases, storage } from "@/lib/appwrite";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/contexts/user/UserContext";
 
 export default function SafariDetails({
   safari,
@@ -37,11 +38,18 @@ export default function SafariDetails({
     setSafariViewMode,
     setSelectedPolygon,
     setSelectedSpot,
+    selectedSafari,
   } = useContext(SafariPageContext);
   const { setOpen } = useContext(CollapsibleContext);
   const { toast } = useToast();
+  const { currentUser } = useUser();
 
   const [isDeleting, setisDeleting] = useState(false);
+  console.log(
+    safari.imageId
+      ? storage.getFileView(config.bucketId, safari.imageId)
+      : defSafari.src
+  );
 
   return (
     <div className="bg-white p-4 rounded-md shadow-md w-[500px] grow flex flex-col overflow-y-auto">
@@ -145,37 +153,40 @@ export default function SafariDetails({
                       >
                         <Eye />
                       </Button>
-                      <Button
-                        onClick={async () => {
-                          try {
-                            setisDeleting(true);
-                            await databases.deleteDocument(
-                              config.dbId,
-                              config.safariStopCollectionId,
-                              s.$id
-                            );
-                            setSafariSpots((prev) =>
-                              prev.filter((cs) => cs.$id != s.$id)
-                            );
-                          } catch (error) {
-                            toast({
-                              variant: "destructive",
-                              title: "Error deleting spot",
-                              description:
-                                error instanceof Error
-                                  ? error.message
-                                  : "Something went wrong.",
-                            });
-                          } finally {
-                            setisDeleting(false);
-                          }
-                        }}
-                        disabled={isDeleting}
-                        variant="destructive"
-                        size="icon"
-                      >
-                        <Trash />
-                      </Button>
+
+                      {currentUser?.$id === selectedSafari?.userId && (
+                        <Button
+                          onClick={async () => {
+                            try {
+                              setisDeleting(true);
+                              await databases.deleteDocument(
+                                config.dbId,
+                                config.safariStopCollectionId,
+                                s.$id
+                              );
+                              setSafariSpots((prev) =>
+                                prev.filter((cs) => cs.$id != s.$id)
+                              );
+                            } catch (error) {
+                              toast({
+                                variant: "destructive",
+                                title: "Error deleting spot",
+                                description:
+                                  error instanceof Error
+                                    ? error.message
+                                    : "Something went wrong.",
+                              });
+                            } finally {
+                              setisDeleting(false);
+                            }
+                          }}
+                          disabled={isDeleting}
+                          variant="destructive"
+                          size="icon"
+                        >
+                          <Trash />
+                        </Button>
+                      )}
                     </div>
                   </div>
                   <GroundPoint point={{ latitude: s.lat, longitude: s.lng }} />
@@ -266,37 +277,41 @@ export default function SafariDetails({
                         >
                           <Eye />
                         </Button>
-                        <Button
-                          onClick={async () => {
-                            try {
-                              setisDeleting(true);
-                              await databases.deleteDocument(
-                                config.dbId,
-                                config.polygonCollectionId,
-                                pol.$id
-                              );
-                              setSafariPolygons((prev) =>
-                                prev.filter((curPols) => curPols.$id != pol.$id)
-                              );
-                            } catch (error) {
-                              toast({
-                                variant: "destructive",
-                                title: "Error deleting polygon",
-                                description:
-                                  error instanceof Error
-                                    ? error.message
-                                    : "Something went wrong.",
-                              });
-                            } finally {
-                              setisDeleting(false);
-                            }
-                          }}
-                          disabled={isDeleting}
-                          variant="destructive"
-                          size="icon"
-                        >
-                          <Trash />
-                        </Button>
+                        {currentUser?.$id === selectedSafari?.userId && (
+                          <Button
+                            onClick={async () => {
+                              try {
+                                setisDeleting(true);
+                                await databases.deleteDocument(
+                                  config.dbId,
+                                  config.polygonCollectionId,
+                                  pol.$id
+                                );
+                                setSafariPolygons((prev) =>
+                                  prev.filter(
+                                    (curPols) => curPols.$id != pol.$id
+                                  )
+                                );
+                              } catch (error) {
+                                toast({
+                                  variant: "destructive",
+                                  title: "Error deleting polygon",
+                                  description:
+                                    error instanceof Error
+                                      ? error.message
+                                      : "Something went wrong.",
+                                });
+                              } finally {
+                                setisDeleting(false);
+                              }
+                            }}
+                            disabled={isDeleting}
+                            variant="destructive"
+                            size="icon"
+                          >
+                            <Trash />
+                          </Button>
+                        )}
                       </div>
                     </div>
                     <GroundPoint point={center} />
