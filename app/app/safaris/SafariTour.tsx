@@ -20,7 +20,12 @@ import { config, databases, storage } from "@/lib/appwrite";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
-import { NEARBY_MARKER, nearbyItemMarkers, TOUR_MARKER } from "@/const/maps";
+import {
+  COMMENT_MARKER,
+  NEARBY_MARKER,
+  nearbyItemMarkers,
+  TOUR_MARKER,
+} from "@/const/maps";
 import { cn } from "@/lib/utils";
 import { NearbyItemInfo, NearbyItemType } from "@/type";
 import { v4 } from "uuid";
@@ -40,6 +45,7 @@ export default function SafariTour({
     routeDecodedPath,
     safariPolygons,
     setRouteDecodedPath,
+    comments,
   } = useContext(SafariPageContext);
   const { setOpen } = useContext(CollapsibleContext);
   const { toast } = useToast();
@@ -101,11 +107,29 @@ export default function SafariTour({
       }
     }
 
+    for (const comment of comments) {
+      const distance = Math.sqrt(
+        Math.pow(center.latitude - comment.lat, 2) +
+          Math.pow(center.longitude - comment.lng, 2)
+      );
+      if (distance < closestDistance && distance <= maxDistance) {
+        closestItem = {
+          id: v4(),
+          type: NearbyItemType.COMMENT,
+          title: comment.name,
+          description: comment.content,
+          latLng: { latitude: comment.lat, longitude: comment.lng },
+        } as NearbyItemInfo;
+        closestDistance = distance;
+      }
+    }
+
     if (closestItem !== nearestItem) {
       setNearestItem(closestItem);
 
       // Clear previous marker
       removeElementsWithClass(NEARBY_MARKER);
+      removeElementsWithClass(COMMENT_MARKER);
 
       // Add marker to the new nearest spot
       if (closestItem) {
@@ -113,7 +137,9 @@ export default function SafariTour({
           closestItem.latLng.latitude,
           closestItem.latLng.longitude,
           nearbyItemMarkers[closestItem.type],
-          NEARBY_MARKER,
+          closestItem.type === NearbyItemType.COMMENT
+            ? COMMENT_MARKER
+            : NEARBY_MARKER,
           true
         ).then((marker) => map.append(marker));
       }
