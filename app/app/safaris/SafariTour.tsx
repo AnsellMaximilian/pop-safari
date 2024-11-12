@@ -240,7 +240,7 @@ export default function SafariTour({
             setIsReverse(true);
           }}
           className={cn(
-            "flex items-center w-8 h-8 rounded-full justify-center gap-1",
+            "flex items-center w-8 h-8 rounded-full justify-center gap-1 disabled:bg-muted disabled:text-muted-foreground disabled:hover:bg-muted disabled:hover:text-muted-foreground",
             isReverse
               ? "bg-primary text-white"
               : "hover:bg-secondary hover:text-secondary-foreground"
@@ -254,10 +254,10 @@ export default function SafariTour({
         <button
           disabled={safariSpots.length < 2}
           className={cn(
-            "p-2 rounded-full",
+            "p-2 rounded-full disabled:bg-muted disabled:text-muted-foreground disabled:hover:bg-muted disabled:hover:text-muted-foreground",
             !isReverse && speedMultiplier <= 1
-              ? "bg-primary text-white disabled:bg-muted disabled:text-muted-foreground"
-              : "hover:bg-secondary disabled:bg-muted disabled:text-muted-foreground"
+              ? "bg-primary text-white"
+              : "hover:bg-secondary"
           )}
           onClick={() => {
             setIsPlaying((prev) => !prev);
@@ -281,7 +281,7 @@ export default function SafariTour({
             setIsReverse(false);
           }}
           className={cn(
-            "flex items-center w-8 h-8 rounded-full justify-center gap-1",
+            "flex items-center w-8 h-8 rounded-full justify-center gap-1 disabled:bg-muted disabled:text-muted-foreground disabled:hover:bg-muted disabled:hover:text-muted-foreground",
             speedMultiplier > 1 && !isReverse
               ? "bg-primary text-white"
               : "hover:bg-secondary hover:text-secondary-foreground"
