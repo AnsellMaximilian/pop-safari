@@ -35,12 +35,14 @@ import { Input } from "@/components/ui/input";
 import { FlyCameraOptions, LatLng, Map3dEvent, PlaceData } from "@/type/maps";
 import {
   COMMENT_MARKER,
+  NEARBY_MARKER,
   POLYGON,
   POLYGON_POINT,
   polylineOptions,
   ROUTE_MARKER,
   ROUTE_POLYLINE,
   SAFARI_SPOT,
+  TOUR_MARKER,
 } from "@/const/maps";
 import {
   MarkerUtils,
@@ -247,6 +249,11 @@ export default function SafariSection() {
     if (safariViewMode !== SafariViewMode.HOME) {
       setSelectedPolygon(null);
       setSelectedSpot(null);
+    }
+
+    if (safariViewMode !== SafariViewMode.TOUR) {
+      removeElementsWithClass(TOUR_MARKER);
+      removeElementsWithClass(NEARBY_MARKER);
     }
 
     const handleMapClick: EventListenerOrEventListenerObject = (basicE) => {

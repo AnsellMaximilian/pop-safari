@@ -228,6 +228,7 @@ export default function SafariTour({
     <>
       <div className="bg-white p-1 rounded-full bottom-4 left-1/2 -translate-x-1/2 absolute z-10 px-4 flex justify-center gap-4 items-center">
         <button
+          disabled={safariSpots.length < 2}
           onClick={() => {
             setIsPlaying(true);
 
@@ -251,11 +252,12 @@ export default function SafariTour({
           <FastForward size={12} className="rotate-180" />
         </button>
         <button
+          disabled={safariSpots.length < 2}
           className={cn(
             "p-2 rounded-full",
             !isReverse && speedMultiplier <= 1
-              ? "bg-primary text-white "
-              : "hover:bg-secondary "
+              ? "bg-primary text-white disabled:bg-muted disabled:text-muted-foreground"
+              : "hover:bg-secondary disabled:bg-muted disabled:text-muted-foreground"
           )}
           onClick={() => {
             setIsPlaying((prev) => !prev);
@@ -269,6 +271,7 @@ export default function SafariTour({
         </button>
 
         <button
+          disabled={safariSpots.length < 2}
           onClick={() => {
             setIsPlaying(true);
             if (isReverse) setspeedMultiplier(1.5);
