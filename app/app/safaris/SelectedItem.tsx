@@ -64,16 +64,6 @@ export default function SelectedItem({
           <h2 className="text-lg font-bold">{title}</h2>
           <p>{description || "No description available"}</p>
         </div>
-        {place && (
-          <>
-            <Separator />
-            <div className="">
-              <h3 className="font-semibold">Associated Place</h3>
-              <PlaceDisplay place={place} />
-            </div>
-          </>
-        )}
-
         {spot && (
           <div className="flex items-center gap-4">
             <div className="grow border-border border rounded-md p-2">
@@ -93,6 +83,15 @@ export default function SelectedItem({
               </div>
             </div>
           </div>
+        )}
+        {place && (
+          <>
+            <Separator />
+            <div className="">
+              <h3 className="font-semibold">Associated Place</h3>
+              <PlaceDisplay place={place} />
+            </div>
+          </>
         )}
       </div>
     </div>
