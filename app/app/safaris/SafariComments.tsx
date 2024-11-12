@@ -11,9 +11,11 @@ import { useUser } from "@/contexts/user/UserContext";
 import { config, databases } from "@/lib/appwrite";
 import { ID, Permission, Role } from "appwrite";
 import { Comment } from "@/type";
-import { removeElementsWithClass } from "@/utils/maps";
+import { MarkerUtils, removeElementsWithClass } from "@/utils/maps";
 import { COMMENT_MARKER } from "@/const/maps";
 import { getErrorMessage, timeSince } from "@/utils/common";
+import { FlyCameraOptions } from "@/type/maps";
+import { getElevation } from "@/lib/maps";
 
 export default function SafariComments({ close }: { close?: () => void }) {
   const {
@@ -22,6 +24,7 @@ export default function SafariComments({ close }: { close?: () => void }) {
     setComments,
     selectedSafari,
     comments,
+    map,
   } = useContext(SafariPageContext);
 
   const { currentUser } = useUser();
@@ -105,6 +108,43 @@ export default function SafariComments({ close }: { close?: () => void }) {
         {comments.map((c) => (
           <div
             key={c.$id}
+            onClick={async () => {
+              if (map) {
+                removeElementsWithClass(COMMENT_MARKER);
+                setCommentPoint(null);
+                const opts: FlyCameraOptions = {
+                  endCamera: {
+                    center: {
+                      lat: c.lat,
+                      lng: c.lng,
+                      altitude: await getElevation({
+                        latitude: c.lat,
+                        longitude: c.lng,
+                      }),
+                    },
+                    range: 1000,
+                    tilt: 67.5,
+                  },
+                  durationMillis: 1000,
+                };
+                // @ts-ignore
+                map.flyCameraTo(opts);
+
+                const markerWithCustomSvg = await MarkerUtils.createImageMarker(
+                  c.lat,
+                  c.lng,
+                  "/comment-marker.svg",
+                  COMMENT_MARKER,
+                  true
+                );
+
+                map?.append(markerWithCustomSvg);
+
+                setTimeout(() => {
+                  removeElementsWithClass(COMMENT_MARKER);
+                }, 5000);
+              }
+            }}
             className="p-2 border-border border rounded-md cursor-pointer hover:bg-muted"
           >
             <div className="flex gap-2 items-center">
