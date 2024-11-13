@@ -136,9 +136,6 @@ export default function SafariList() {
           if (!val) setSafariToDelete(null);
         }}
       >
-        <AlertDialogTrigger asChild>
-          <Button variant="outline">Show Dialog</Button>
-        </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
