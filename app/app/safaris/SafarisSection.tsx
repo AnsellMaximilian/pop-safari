@@ -24,9 +24,11 @@ import SafariView from "./SafariView";
 import {
   computeRoute,
   createPolygon,
+  createPulseEffect,
   flyAlongRoute,
   getBaseRouteRequest,
   getElevation,
+  getNearbyPlaces,
   getPlaceDetails,
   initAutocomplete,
   loader,
@@ -42,6 +44,7 @@ import {
   ROUTE_MARKER,
   ROUTE_POLYLINE,
   SAFARI_SPOT,
+  SEARCH_PLACE_MARKER,
   TOUR_MARKER,
 } from "@/const/maps";
 import {
@@ -240,6 +243,7 @@ export default function SafariSection() {
   }, [map]);
 
   useEffect(() => {
+    setPlace(null);
     if (safariViewMode !== SafariViewMode.ROUTE)
       removeElementsWithClass(ROUTE_MARKER);
 
@@ -255,6 +259,9 @@ export default function SafariSection() {
       removeElementsWithClass(TOUR_MARKER);
       removeElementsWithClass(NEARBY_MARKER);
     }
+
+    if (safariViewMode !== SafariViewMode.SEARCH)
+      removeElementsWithClass(SEARCH_PLACE_MARKER);
 
     const handleMapClick: EventListenerOrEventListenerObject = (basicE) => {
       loader.load().then(async () => {
@@ -324,6 +331,29 @@ export default function SafariSection() {
           );
 
           map?.append(markerWithCustomSvg);
+        } else if (safariViewMode === SafariViewMode.SEARCH && map) {
+          createPulseEffect(
+            map,
+            {
+              latitude: latLng.latitude,
+              longitude: latLng.longitude,
+            },
+            3,
+            500
+          );
+
+          const nearbyPlaces = await getNearbyPlaces(
+            latLng.latitude,
+            latLng.longitude,
+            map,
+            500,
+            async (place) => {
+              try {
+                const placeDetails = await getPlaceDetails(place.id);
+                setPlace(placeDetails);
+              } catch (error) {}
+            }
+          );
         }
       });
     };

@@ -72,37 +72,41 @@ export default function SafariDetails({
             Polygons
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="general" className="gap-4 grow flex flex-col">
-          <div className="text-[0.8rem] text-muted-foreground text-center">
-            This section shows general details for the Safari you&apos;re
-            currently viewing.
-          </div>
-          <div>
-            <img
-              src={
-                safari.imageId
-                  ? storage.getFileView(config.bucketId, safari.imageId)
-                  : defSafari.src
-              }
-              width={200}
-              height={200}
-              className={cn(
-                "w-full h-64 object-cover border-border border",
-                safari.imageId ? "" : "object-contain"
-              )}
-              alt="user profile"
-            />
-          </div>
-          <div className="">
-            <div className="text-sm font-bold">Description</div>
-            <div>
-              {safari.description ? safari.description : "No description."}
+        <TabsContent value="general" className="gap-4 grow">
+          <div className="flex h-full flex-col">
+            <div className="text-[0.8rem] text-muted-foreground text-center">
+              This section shows general details for the Safari you&apos;re
+              currently viewing.
             </div>
-          </div>
-          <div className="flex justify-end mt-auto">
-            <div className="text-sm">
-              Last Updated{" "}
-              <span className="font-bold">{timeSince(safari.$updatedAt)}</span>
+            <div>
+              <img
+                src={
+                  safari.imageId
+                    ? storage.getFileView(config.bucketId, safari.imageId)
+                    : defSafari.src
+                }
+                width={200}
+                height={200}
+                className={cn(
+                  "w-full h-64 object-cover border-border border",
+                  safari.imageId ? "" : "object-contain"
+                )}
+                alt="user profile"
+              />
+            </div>
+            <div className="">
+              <div className="text-sm font-bold">Description</div>
+              <div>
+                {safari.description ? safari.description : "No description."}
+              </div>
+            </div>
+            <div className="flex justify-end mt-auto">
+              <div className="text-sm">
+                Last Updated{" "}
+                <span className="font-bold">
+                  {timeSince(safari.$updatedAt)}
+                </span>
+              </div>
             </div>
           </div>
         </TabsContent>

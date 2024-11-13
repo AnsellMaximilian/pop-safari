@@ -160,7 +160,8 @@ export async function getNearbyPlaces(
   lat: number,
   lng: number,
   map?: google.maps.maps3d.Map3DElement,
-  radius: number = 500
+  radius: number = 500,
+  onMarkerClick?: (place: google.maps.places.Place) => void | Promise<void>
 ) {
   //@ts-ignore
   const { Place, SearchNearbyRankPreference } =
@@ -175,10 +176,10 @@ export async function getNearbyPlaces(
 
   const request = {
     // required parameters
-    fields: ["displayName", "location", "businessStatus"],
+    fields: ["id", "displayName", "location", "businessStatus"],
     locationRestriction: {
       center: center,
-      radius: 500,
+      radius: radius,
     },
     // optional parameters
     maxResultCount: 5,
@@ -189,7 +190,7 @@ export async function getNearbyPlaces(
 
   //@ts-ignore
   const { places } = await Place.searchNearby(request);
-  removeElementsWithClass(NEARBY_MARKER);
+  removeElementsWithClass(SEARCH_PLACE_MARKER);
 
   if (places.length && map) {
     const { LatLngBounds } = (await google.maps.importLibrary(
@@ -197,14 +198,21 @@ export async function getNearbyPlaces(
     )) as google.maps.CoreLibrary;
 
     // Loop through and get all the results.
-    places.forEach((place) => {
-      const marker = new Marker3DElement({
-        position: { lat: place.location?.lat(), lng: place.location?.lng() },
-        label: place.displayName ?? "Place",
-      });
-
-      marker.classList.add(NEARBY_MARKER);
-      map.append(marker);
+    places.forEach(async (place) => {
+      if (place.location?.lat() && place.location?.lng()) {
+        const marker = await MarkerUtils.createImageMarker(
+          place.location?.lat(),
+          place.location?.lng(),
+          "/search-marker.svg",
+          SEARCH_PLACE_MARKER,
+          true,
+          (e) => {
+            e.stopPropagation();
+            if (onMarkerClick) onMarkerClick(place);
+          }
+        );
+        map.append(marker);
+      }
     });
   }
   return places;
@@ -508,4 +516,76 @@ export function updateGroundCircle(
   });
 
   polygon.outerCoordinates = newCoordinates;
+}
+
+export async function createPulseEffect(
+  map: google.maps.maps3d.Map3DElement,
+  clickPosition: LatLng,
+  pulseCount: number = 3,
+  maxRadius: number = 100,
+  delayBetweenPulses: number = 300
+) {
+  // @ts-ignore
+  const { Polyline3DElement } = await google.maps.importLibrary("maps3d");
+
+  const createPulseCircle = (delay: number) => {
+    const numPoints = 30;
+    const circleElement = new Polyline3DElement({
+      coordinates: Array.from({ length: numPoints }, (_, i) => {
+        const angle = (i * 360) / numPoints;
+        const radian = (angle * Math.PI) / 180;
+        return {
+          lat: clickPosition.latitude + (5 / 111320) * Math.cos(radian), // Initial small radius
+          lng:
+            clickPosition.longitude +
+            (5 /
+              (111320 * Math.cos(clickPosition.latitude * (Math.PI / 180)))) *
+              Math.sin(radian),
+        };
+      }),
+      altitudeMode: google.maps.maps3d.AltitudeMode.CLAMP_TO_GROUND,
+      strokeColor: "#F97316",
+      strokeWidth: 2,
+    });
+
+    map.append(circleElement);
+
+    let startTime: number | null = null;
+
+    const animate = (time: number) => {
+      if (!startTime) startTime = time;
+      const progress = (time - startTime) / 1000;
+      const easedProgress = Math.min(progress, 1);
+
+      const currentRadius = easedProgress * maxRadius;
+      circleElement.coordinates = Array.from({ length: numPoints }, (_, i) => {
+        const angle = (i * 360) / numPoints;
+        const radian = (angle * Math.PI) / 180;
+        return {
+          lat:
+            clickPosition.latitude +
+            (currentRadius / 111320) * Math.cos(radian),
+          lng:
+            clickPosition.longitude +
+            (currentRadius /
+              (111320 * Math.cos(clickPosition.latitude * (Math.PI / 180)))) *
+              Math.sin(radian),
+        };
+      });
+
+      circleElement.strokeColor = `rgba(249, 115, 22, ${1 - easedProgress})`;
+
+      if (easedProgress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        map.removeChild(circleElement);
+      }
+    };
+
+    setTimeout(() => requestAnimationFrame(animate), delay);
+  };
+
+  for (let i = 0; i < pulseCount; i++) {
+    createPulseCircle(i * delayBetweenPulses);
+  }
 }

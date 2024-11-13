@@ -41,6 +41,7 @@ import SafariTour from "./SafariTour";
 import SafariComments from "./SafariComments";
 import CommentForm from "./CommentForm";
 import SelectedItem from "./SelectedItem";
+import SafariSearch from "./SafariSearch";
 
 export default function SafariView({ safari }: { safari: Safari }) {
   const {
@@ -125,6 +126,13 @@ export default function SafariView({ safari }: { safari: Safari }) {
                 className="border-border border"
               >
                 <MapPin className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value={SafariViewMode.SEARCH}
+                aria-label="Toggle Route Mode"
+                className="border-border border"
+              >
+                <Search className="h-4 w-4" />
               </ToggleGroupItem>
               <ToggleGroupItem
                 value={SafariViewMode.POLYGON}
@@ -248,6 +256,10 @@ export default function SafariView({ safari }: { safari: Safari }) {
             <SafariComments close={() => setOpen(false)} />
           )}
         ></CollapsibleController>
+      )}
+
+      {selectedSafari && safariViewMode === SafariViewMode.SEARCH && (
+        <SafariSearch />
       )}
     </>
   );

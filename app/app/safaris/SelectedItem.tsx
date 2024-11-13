@@ -24,7 +24,6 @@ export default function SelectedItem({
 
   useEffect(() => {
     (async () => {
-      console.log(spot);
       if (spot && spot.placeId) {
         const placeDetails = await getPlaceDetails(spot.placeId);
 
