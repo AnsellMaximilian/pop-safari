@@ -16,6 +16,7 @@ import {
   RouteStep,
 } from "@/type/maps";
 import {
+  MarkerUtils,
   removeElementsWithClass,
   removeElementsWithSelector,
 } from "@/utils/maps";
@@ -128,14 +129,19 @@ export const zoomToLocation = async (
 
   removeElementsWithClass(SEARCH_PLACE_MARKER);
 
-  // Place a marker at the location
-  const marker = new Marker3DElement({
-    position: { lat: location.lat(), lng: location.lng(), altitude: 50 }, // Set altitude as needed
-    title: "Selected Location",
-    label: "Found Place",
-  });
-  marker.classList.add(SEARCH_PLACE_MARKER);
+  const marker = await MarkerUtils.createImageMarker(
+    location.lat(),
+    location.lng(),
+    "/search-marker.svg",
+    SEARCH_PLACE_MARKER,
+    true
+  );
+
   map3DElement.append(marker);
+
+  setTimeout(() => {
+    removeElementsWithClass(SEARCH_PLACE_MARKER);
+  }, 5000);
 
   // Zoom to the marker location
   let elevation = await getElevationforPoint(location, place);
