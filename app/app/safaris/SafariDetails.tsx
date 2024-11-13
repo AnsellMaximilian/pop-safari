@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/user/UserContext";
+import { timeSince } from "@/utils/common";
 
 export default function SafariDetails({
   safari,
@@ -71,7 +72,7 @@ export default function SafariDetails({
             Polygons
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="general" className="space-y-4 grow ">
+        <TabsContent value="general" className="gap-4 grow flex flex-col">
           <div className="text-[0.8rem] text-muted-foreground text-center">
             This section shows general details for the Safari you&apos;re
             currently viewing.
@@ -92,8 +93,17 @@ export default function SafariDetails({
               alt="user profile"
             />
           </div>
-          <div>
-            {safari.description ? safari.description : "No description."}
+          <div className="">
+            <div className="text-sm font-bold">Description</div>
+            <div>
+              {safari.description ? safari.description : "No description."}
+            </div>
+          </div>
+          <div className="flex justify-end mt-auto">
+            <div className="text-sm">
+              Last Updated{" "}
+              <span className="font-bold">{timeSince(safari.$updatedAt)}</span>
+            </div>
           </div>
         </TabsContent>
         <TabsContent value="spots" className="space-y-4 grow ">
