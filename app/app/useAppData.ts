@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AppPageContext, AppPageContextData } from "./page";
+import { AppPageContext, AppPageContextData } from "./safariData";
 
 export const useAppData = (): AppPageContextData => {
   const context = useContext(AppPageContext);

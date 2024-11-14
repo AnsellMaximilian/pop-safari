@@ -2,13 +2,10 @@
 
 import Map3D from "@/components/Map3D";
 import { useEffect, useRef, useState } from "react";
-import logo from "@/assets/pop-safari-logo.svg";
-import Image from "next/image";
-import { getElevation, loader } from "@/lib/maps";
+import { loader } from "@/lib/maps";
 import { ROUTE_MARKER } from "@/const/maps";
 import { MarkerUtils } from "@/utils/maps";
 import { useRouter } from "next/navigation";
-import { FlyCameraOptions } from "@/type/maps";
 
 export default function Home() {
   const [map, setMap] = useState<google.maps.maps3d.Map3DElement | null>(null);

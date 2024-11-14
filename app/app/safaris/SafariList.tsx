@@ -132,7 +132,7 @@ export default function SafariList() {
       </div>
       <AlertDialog
         open={!!safariToDelete}
-        onOpenChange={(val) => {
+        onOpenChange={(val: boolean) => {
           if (!val) setSafariToDelete(null);
         }}
       >

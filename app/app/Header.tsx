@@ -4,8 +4,8 @@ import Image from "next/image";
 import React from "react";
 import logo from "@/assets/pop-safari-logo.svg";
 import UserMenu from "@/components/UserMenu";
-import { AppMenuType } from "./page";
 import { useAppData } from "./useAppData";
+import { AppMenuType } from "./safariData";
 export const NavItem = ({
   label,
   onClick,

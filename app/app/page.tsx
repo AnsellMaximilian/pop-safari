@@ -2,39 +2,16 @@
 
 import Map3D from "@/components/Map3D";
 import { useUser } from "@/contexts/user/UserContext";
-import { cn } from "@/lib/utils";
 import { FlyCameraOptions } from "@/type/maps";
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ProfileSection from "./profile/ProfileSection";
 import SafariSection from "./safaris/SafarisSection";
 import privateRoute from "@/hooks/privateRoute";
-
-export enum AppMenuType {
-  SAFARIS = "SAFARIS",
-  PROFILE = "PROFILE",
-  FRIENDS = "FRIENDS",
-  EXTRAS = "EXTRAS",
-}
-
-export interface AppPageContextData {
-  selectedMenu: AppMenuType;
-  setSelectedMenu: React.Dispatch<React.SetStateAction<AppMenuType>>;
-  mapRef: React.RefObject<HTMLDivElement>;
-  map: google.maps.maps3d.Map3DElement | null;
-  setMap: React.Dispatch<
-    React.SetStateAction<google.maps.maps3d.Map3DElement | null>
-  >;
-}
-
-export const AppPageContext = createContext<AppPageContextData | undefined>(
-  undefined
-);
+import { AppMenuType, AppPageContext } from "./safariData";
 
 function AppPage() {
   const [map, setMap] = useState<google.maps.maps3d.Map3DElement | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
-
-  const { currentUser } = useUser();
 
   const [selectedMenu, setSelectedMenu] = useState<AppMenuType>(
     AppMenuType.SAFARIS

@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 import { UserContextProvider } from "@/contexts/user/UserContextProvider";
 import { DataContextProvider } from "@/contexts/data/DataContextProvider";
 
