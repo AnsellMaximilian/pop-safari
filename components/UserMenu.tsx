@@ -17,7 +17,7 @@ import { config, storage } from "@/lib/appwrite";
 import { getInitials } from "@/utils/common";
 import { SafariPageContext } from "@/app/app/safaris/SafarisSection";
 import { useAppData } from "@/app/app/useAppData";
-import { AppMenuType } from "@/app/app/page";
+import { AppMenuType } from "@/app/app/safariData";
 export default function UserMenu() {
   const { logout, currentUser } = useUser();
   const { setSelectedMenu } = useAppData();
