@@ -8,6 +8,7 @@ import { getElevation, loader } from "@/lib/maps";
 import { ROUTE_MARKER } from "@/const/maps";
 import { MarkerUtils } from "@/utils/maps";
 import { useRouter } from "next/navigation";
+import { FlyCameraOptions } from "@/type/maps";
 
 export default function Home() {
   const [map, setMap] = useState<google.maps.maps3d.Map3DElement | null>(null);
@@ -16,6 +17,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    // 27.9929310957643,88.07476617360388,6096.794901310786
     if (map) {
       loader.load().then(async () => {
         // @ts-ignore
@@ -42,7 +44,24 @@ export default function Home() {
           ROUTE_MARKER,
           true,
           (e) => {
-            router.push("/app");
+            // @ts-ignore
+            map.flyCameraAround({
+              camera: {
+                center: {
+                  lat: 27.989023561084355,
+                  lng: 87.15689047466542,
+                  altitude: 4317.825535016791,
+                },
+                tilt: 79.62952734836283,
+                range: 28303.85835754685,
+                heading: 86.06221146169686,
+              },
+              durationMillis: 1000,
+              rounds: 1,
+            });
+            setTimeout(() => {
+              router.push("/app");
+            }, 1000);
           },
           300
         );
