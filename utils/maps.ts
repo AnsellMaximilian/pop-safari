@@ -41,7 +41,8 @@ export class MarkerUtils {
     imageUrl: string,
     className: string,
     extruded: boolean = false,
-    onClick?: (event: Map3dEvent) => void
+    onClick?: (event: Map3dEvent) => void,
+    extrudedAltitude: number = 100
   ) {
     // @ts-ignore
     const { Marker3DElement, AltitudeMode, Marker3DInteractiveElement } =
@@ -52,7 +53,7 @@ export class MarkerUtils {
 
     const extraOptions = extruded
       ? {
-          position: { lat, lng, altitude: 100 },
+          position: { lat, lng, altitude: extrudedAltitude },
           extruded: true,
           altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
         }
