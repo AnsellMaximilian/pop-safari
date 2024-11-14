@@ -12,8 +12,6 @@ import {
   createGroundCircle,
   findCenter,
   getAltitudesForPoints,
-  getElevation,
-  getElevationforPoint,
   updateGroundCircle,
 } from "@/lib/maps";
 import { config, databases, storage } from "@/lib/appwrite";

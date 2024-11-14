@@ -14,7 +14,7 @@ import { GroundPoint } from "@/components/Point";
 import { Eye, Trash, X } from "lucide-react";
 import { CollapsibleContext } from "@/components/CollapsibleController";
 import { FlyCameraOptions, LatLng } from "@/type/maps";
-import { findCenter, getElevation, getElevationforPoint } from "@/lib/maps";
+import { findCenter, getElevation } from "@/lib/maps";
 import { config, databases, storage } from "@/lib/appwrite";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";

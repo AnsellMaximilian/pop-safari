@@ -25,7 +25,6 @@ import {
   computeRoute,
   createPolygon,
   createPulseEffect,
-  flyAlongRoute,
   getBaseRouteRequest,
   getElevation,
   getNearbyPlaces,
