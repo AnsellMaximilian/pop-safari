@@ -19,9 +19,9 @@ import defUser from "@/assets/default-user.svg";
 import Image from "next/image";
 import UserProfile from "./UserProfile";
 import UserFriends from "./UserFriends";
-import { AppMenuType, AppPageContext } from "../page";
 import { useAppData } from "../useAppData";
 import Header from "../Header";
+import { AppMenuType } from "../safariData";
 
 function ProfileMenu({
   label,
