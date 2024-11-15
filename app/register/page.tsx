@@ -241,7 +241,12 @@ function RegisterPage() {
     }
   }
   return (
-    <Map3D mapRef={mapRef} className="fixed inset-0" setMap={setMap}>
+    <Map3D
+      mapRef={mapRef}
+      className="fixed inset-0"
+      setMap={setMap}
+      disableLabels
+    >
       <div
         className={cn(
           "h-full flex items-center p-4 absolute top-0 z-30 transition-all duration-1000",
