@@ -56,6 +56,7 @@ import { Query } from "appwrite";
 import { excludeStartAndEnd, hexToRGBA } from "@/utils/common";
 import { useAppData } from "../useAppData";
 import Header from "../Header";
+import OtherSafarisList from "./OtherSafarisList";
 
 export interface ExtraSpotData {
   placeId?: string;
@@ -600,7 +601,12 @@ export default function SafariSection() {
             </CardHeader>
             <CardContent>
               {safaris.data.length > 0 ? (
-                <SafariList />
+                <>
+                  <SafariList />
+                  <div className="mt-4">
+                    <OtherSafarisList />
+                  </div>
+                </>
               ) : (
                 <div className="flex flex-col gap-4 items-center mt-16">
                   <Image
@@ -617,6 +623,10 @@ export default function SafariSection() {
                   <Button onClick={() => setPageMode(SafariPageMode.CREATE)}>
                     Create Safari
                   </Button>
+
+                  <div className="mt-auto w-full">
+                    <OtherSafarisList />
+                  </div>
                 </div>
               )}
             </CardContent>
