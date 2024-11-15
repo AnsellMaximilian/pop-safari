@@ -336,6 +336,7 @@ export const generateValidId = () => {
 };
 
 export async function getElevation(coord: LatLng) {
+  console.log("I'm getting elevation");
   const location = new google.maps.LatLng(coord.latitude, coord.longitude);
   // @ts-ignore
   const { ElevationService } = await google.maps.importLibrary("elevation");
@@ -455,6 +456,34 @@ export async function getAltitudesForPoints(
       return { ...point, altitude: elevation + offset };
     })
   );
+  return altitudes;
+}
+
+export async function getAltitudesForPointsWithSampling(
+  points: LatLng[],
+  sampleInterval: number = 50,
+  offset: number = 50
+): Promise<LatLngAlt[]> {
+  const altitudes: LatLngAlt[] = [];
+
+  for (let i = 0; i < points.length; i += sampleInterval) {
+    const point = points[i];
+
+    const elevation = await getElevation({
+      latitude: point.latitude,
+      longitude: point.longitude,
+    });
+
+    const altitudeWithOffset = elevation + offset;
+
+    for (let j = i; j < Math.min(i + sampleInterval, points.length); j++) {
+      altitudes.push({
+        ...points[j],
+        altitude: altitudeWithOffset,
+      });
+    }
+  }
+
   return altitudes;
 }
 

@@ -12,6 +12,7 @@ import {
   createGroundCircle,
   findCenter,
   getAltitudesForPoints,
+  getAltitudesForPointsWithSampling,
   updateGroundCircle,
 } from "@/lib/maps";
 import { config, databases, storage } from "@/lib/appwrite";
@@ -146,7 +147,9 @@ export default function SafariTour({
 
   useEffect(() => {
     (async () => {
-      setPointsWithAltitudes(await getAltitudesForPoints(routeDecodedPath));
+      setPointsWithAltitudes(
+        await getAltitudesForPointsWithSampling(routeDecodedPath)
+      );
     })();
   }, [routeDecodedPath]);
 
