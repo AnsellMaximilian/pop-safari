@@ -96,6 +96,8 @@ export interface NearbyItemInfo {
   description: string;
   latLng: LatLng;
   placeId?: string;
+  spot?: SafariSpot;
+  polygon?: SafariPolygon;
 }
 
 export enum NearbyItemType {

@@ -82,6 +82,7 @@ export default function SafariTour({
           title: spot.name,
           description: spot.description || "No description",
           latLng: { latitude: spot.lat, longitude: spot.lng },
+          spot: spot,
         } as NearbyItemInfo;
         closestDistance = distance;
       }
