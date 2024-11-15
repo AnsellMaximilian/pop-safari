@@ -552,7 +552,8 @@ export async function createPulseEffect(
   clickPosition: LatLng,
   pulseCount: number = 3,
   maxRadius: number = 100,
-  delayBetweenPulses: number = 300
+  delayBetweenPulses: number = 300,
+  pulseDuration: number = 3000 // Slower pulse duration in milliseconds
 ) {
   // @ts-ignore
   const { Polyline3DElement } = await google.maps.importLibrary("maps3d");
@@ -564,7 +565,7 @@ export async function createPulseEffect(
         const angle = (i * 360) / numPoints;
         const radian = (angle * Math.PI) / 180;
         return {
-          lat: clickPosition.latitude + (5 / 111320) * Math.cos(radian), // Initial small radius
+          lat: clickPosition.latitude + (5 / 111320) * Math.cos(radian),
           lng:
             clickPosition.longitude +
             (5 /
@@ -574,7 +575,7 @@ export async function createPulseEffect(
       }),
       altitudeMode: google.maps.maps3d.AltitudeMode.CLAMP_TO_GROUND,
       strokeColor: "#F97316",
-      strokeWidth: 2,
+      strokeWidth: 3,
     });
 
     map.append(circleElement);
@@ -583,7 +584,7 @@ export async function createPulseEffect(
 
     const animate = (time: number) => {
       if (!startTime) startTime = time;
-      const progress = (time - startTime) / 1000;
+      const progress = (time - startTime) / pulseDuration;
       const easedProgress = Math.min(progress, 1);
 
       const currentRadius = easedProgress * maxRadius;
