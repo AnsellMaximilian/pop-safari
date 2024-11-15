@@ -42,20 +42,29 @@ export default function SafariCard({
           ? truncateString(safari.description, 25)
           : "No description."}
       </p>
-      {currentUser?.$id === safari.userId && (
-        <div className="ml-auto flex justify-end mt-auto">
-          <Button
-            variant="destructive"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (handleDelete) handleDelete();
-            }}
-          >
-            <Trash />
-          </Button>
+      <div className="flex justify-between mt-auto">
+        <div>
+          <div className="text-sm font-bold">{safari.name}</div>
+
+          <div className="text-xs text-muted-foreground">
+            @{safari.username}
+          </div>
         </div>
-      )}
+        {currentUser?.$id === safari.userId && (
+          <div className="ml-auto">
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (handleDelete) handleDelete();
+              }}
+            >
+              <Trash />
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

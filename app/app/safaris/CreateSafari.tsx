@@ -109,7 +109,7 @@ export default function CreateSafari({
   async function onCreateSafari(values: z.infer<typeof safariFormSchema>) {
     let errorMsg = "Something went wrong.";
     let hasError = false;
-    if (currentUser === null) return;
+    if (currentUser === null || !currentUser.profile) return;
     try {
       const { title, description, visibility } = values;
       const safariId = ID.unique();
@@ -135,6 +135,8 @@ export default function CreateSafari({
           imageId,
           userId: currentUser.$id,
           memberIds: [],
+          name: currentUser.name,
+          username: currentUser.profile.username,
         },
         [
           Permission.update(Role.user(currentUser.$id)),

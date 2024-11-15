@@ -60,6 +60,8 @@ export type Safari = Models.Document & {
   visibility: SafariVisibility;
   userId: string;
   status: SafariStatus;
+  username: string;
+  name: string;
 };
 
 export type SafariSpot = Models.Document & {
