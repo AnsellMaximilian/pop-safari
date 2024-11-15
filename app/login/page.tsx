@@ -83,6 +83,7 @@ function LoginPage() {
         tilt: 38.562146810825524,
         range: 345.3777056404943,
         heading: -67.68847669942795,
+        defaultLabelsDisabled: true,
       }}
     >
       <div className="flex flex-col justify-center grow items-center p-4 bottom-4 left-1/2 absolute -translate-x-1/2 z-10 w-full">
