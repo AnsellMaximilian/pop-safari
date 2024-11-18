@@ -260,8 +260,12 @@ export default function SafariTour({
           onClick={() => {
             setIsPlaying(true);
 
-            if (!isReverse) setspeedMultiplier(1);
-            else {
+            if (!isReverse) {
+              const oldMultiplier = speedMultiplier;
+              setspeedMultiplier(1);
+
+              if (oldMultiplier > 1) return;
+            } else {
               setspeedMultiplier((prev) => (prev + 0.5 > 2 ? 1 : prev + 0.5));
             }
 
