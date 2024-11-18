@@ -258,8 +258,6 @@ export default function SafariTour({
         <button
           disabled={safariSpots.length < 2}
           onClick={() => {
-            setIsPlaying(true);
-
             if (!isReverse) {
               const oldMultiplier = speedMultiplier;
               setspeedMultiplier(1);
@@ -268,6 +266,7 @@ export default function SafariTour({
             } else {
               setspeedMultiplier((prev) => (prev + 0.5 > 2 ? 1 : prev + 0.5));
             }
+            setIsPlaying(true);
 
             setIsReverse(true);
           }}
